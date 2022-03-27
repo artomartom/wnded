@@ -6,31 +6,21 @@
 #include <iostream>
 #include <iomanip>
 
-//decl
+// decl
 #include "Wrapper.hpp"
 #include "Writer.hpp"
 #include "Exception.hpp"
 #include "Timer.hpp"
 
-
-
-
-
+using Exception::Invoke;
 using Wrapper::HFile;
 using Writer::Error;
 using Writer::Log;
 using Writer::Warning;
 using Writer::eOut::Console;
 using Writer::eOut::File;
-using Exception::Invoke;
 
-using Size = struct
-{
-    float Width;
-    float Height;
-};
-
-//impl
+// impl
 #include "Wrapper.inl"
 #include "CoreWindow.hpp"
 #include "Writer.inl"

@@ -117,9 +117,7 @@ namespace Exception
             << L"         [Hex ] 0x" << std::hex << ErrorCode << L"\n"
             << L"->";
 
-      
-
-        if (::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+              if (::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                              nullptr,
                              ErrorCode,
                              MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),

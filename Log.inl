@@ -2,7 +2,7 @@
 
 #ifndef LOG_INL
 #define LOG_INL
- 
+
 inline void fOut(std::wstring_view text)
 {
     // static HFile file{HFile::IvalidHandle()};
@@ -21,7 +21,7 @@ inline void fOut(std::wstring_view text)
         }
         else
         {
-            file.Attach(HFile::CreateFile(L"Log.txt" ));
+            file.Attach(HFile::CreateFile(L"Log.txt"));
             --tries;
         };
     };
@@ -41,7 +41,6 @@ constexpr std::wstringstream Accumulate(Args const &...args)
     return ss;
 };
 
- 
 inline std::wstring GetSysTime()
 {
     SYSTEMTIME time{};
@@ -59,8 +58,7 @@ inline std::wstring GetSysTime()
     return out;
 };
 
-
- template< eType T>
+template <eType T>
 constexpr std::wstring_view prefix()
 {
 #define TCASE(in, out) \
@@ -78,7 +76,7 @@ constexpr std::wstring_view prefix()
 #undef TCASE
 };
 
-template <  eType MT, eOut O>
+template <eType MT, eOut O>
 struct Message
 {
 
@@ -86,7 +84,7 @@ struct Message
     constexpr static void Write(Args const &...args)
     {
 
-        std::wstringstream output{Accumulate(prefix<  MT>(), GetSysTime(), args...)};
+        std::wstringstream output{Accumulate(prefix<MT>(), GetSysTime(), args...)};
 
         if constexpr (O == eOut::Console)
         {

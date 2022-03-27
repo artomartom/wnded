@@ -2,7 +2,7 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-enum    eOut : uint32_t
+enum eOut : uint32_t
 {
     None = 0,
     Console = 1,

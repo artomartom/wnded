@@ -76,9 +76,9 @@ namespace Window
       ::RegisterClassExW(&wincl);
 
       constexpr DWORD hwin_style = WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_MINIMIZE;
-      constexpr DWORD hwin_style_ex = WS_EX_OVERLAPPEDWINDOW ;
+      constexpr DWORD hwin_style_ex = WS_EX_OVERLAPPEDWINDOW;
 
-      RECT MainRect{rect};  
+      RECT MainRect{rect};
       ::AdjustWindowRectEx(&MainRect, hwin_style, 0, hwin_style_ex);
 
       CreationArgs CreateArgs{this, hinst, rect};

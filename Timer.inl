@@ -1,9 +1,10 @@
 #ifndef TIMER_INL
 #define TIMER_INL
+
 namespace Timer
 {
 
- inline SYSTEMTIME GetLocalTime() noexcept
+  inline SYSTEMTIME GetLocalTime() noexcept
   {
     SYSTEMTIME tmp{};
     ::GetLocalTime(&tmp);

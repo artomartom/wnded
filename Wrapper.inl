@@ -1,6 +1,7 @@
 
 #ifndef WRAPPER_INL
 #define WRAPPER_INL
+
 namespace Wrapper
 {
     class HFile

@@ -1,6 +1,7 @@
 
 #ifndef WRITER_HPP
 #define WRITER_HPP
+
 namespace Writer
 {
     enum eOut : uint32_t

@@ -1,5 +1,4 @@
 
-
 #ifndef WRITER_INL
 #define WRITER_INL
 
@@ -68,7 +67,7 @@ namespace Writer
             if constexpr (O == eOut::Console)
             {
                 GUI_ONLY(static_assert(0));
- 
+
                 cOut(output.view());
             }
             else if constexpr (O == eOut::File)
