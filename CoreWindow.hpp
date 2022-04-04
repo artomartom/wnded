@@ -36,6 +36,22 @@ namespace Window
     ::SIZE m_New{};
   };
 
+  struct AppEventArgs
+  {
+    AppEventArgs(::UINT message, ::WPARAM wParam, ::LPARAM lParam)
+        : message{message}, wParam{wParam}, lParam{lParam} {};
+    ::UINT message{};
+    ::WPARAM wParam{};
+    ::LPARAM lParam{};
+  };
+  struct CommandArgs
+  {
+    CommandArgs(::WPARAM wParam, ::LPARAM lParam)
+        : wParam{wParam}, lParam{lParam} {};
+    ::WPARAM wParam{};
+    ::LPARAM lParam{};
+  };
+
   struct ActivateArgs
   {
     ActivateArgs(WPARAM wParam)
@@ -50,6 +66,7 @@ namespace Window
     } m_Activate{};
     bool m_IsMinimized{};
   };
+
 #pragma endregion // EventArgs
 
   template <class TImpl>
@@ -92,7 +109,6 @@ namespace Window
           HWND_DESKTOP, nullptr, nullptr, &CreateArgs);
     };
 
-  private: // member (restrict  to only HWND)
   private: // non-member functions
     template <class TCoreWindow>
     friend int __stdcall Run(const TCoreWindow &window);
@@ -117,7 +133,7 @@ namespace Window
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
         PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
-        PROCCASE(WM_CLOSE, false, {s_pthis->TImpl::OnClose(); /*::DestroyWindow(hWnd);*/::PostQuitMessage(0);  s_pthis =nullptr; });
+        PROCCASE(WM_CLOSE, false, {s_pthis->TImpl::OnClose(); ::PostQuitMessage(0);  s_pthis =nullptr; });
         /*visual*/
         PROCCASE(WM_ERASEBKGND, true, {});
         PROCCASE(WM_PAINT, false,
@@ -130,13 +146,22 @@ namespace Window
         PROCCASE(WM_SIZE, false, s_pthis->TImpl::OnSizeChanged({wParam, lParam}));
         PROCCASE(WM_SIZING, true, s_pthis->TImpl::OnSizing(reinterpret_cast<RECT *>(lParam)));
 
-        /*Devices::Input*/
+        /*user input*/
+        PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
         PROCCASE(WM_MOUSEMOVE, false, s_pthis->OnCursorMove());
         PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1 << 31))) ? s_pthis->OnKeyStroke() : s_pthis->OnKeyHold(); });
+      };
 
-      default:
-        return ::DefWindowProcW(hWnd, message, wParam, lParam);
+      if (message > WM_APP)
+      {
+        s_pthis->TImpl::OnAppEvent(AppEventArgs(message, wParam, lParam));
+        return 0;
       }
+      else
+      {
+        return ::DefWindowProcW(hWnd, message, wParam, lParam);
+      };
+
 #undef PROCCASE
     };
   };
@@ -160,15 +185,17 @@ namespace Window
 class CoreApp
 {
 public:
-  void OnCreate(const ::Window::CreationArgs &args) noexcept {};
+  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {};
   void OnPaint() noexcept {};
   void OnClose() noexcept {};
   void OnKeyHold() noexcept {};
   void OnKeyStroke() noexcept {};
   void OnCursorMove() noexcept {};
-  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
   void OnSizing(_Out_ RECT *pRect) noexcept {};
-  void OnWindowActivate(const ::Window::ActivateArgs &args) noexcept {};
+  void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept {};
+  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
+  void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
+  void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
 
 protected:
   HWND m_hWnd{nullptr};

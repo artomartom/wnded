@@ -103,7 +103,7 @@ namespace Exception
     inline HRESULT FormatError(std::wstring_view File, uint32_t uLine, std::wstring_view Func, HRESULT ErrorCode, std::wstring_view Note)
     {
 
-        RLS_ONLY(static_assert(0));
+        RLS_ONLY(assert(0));
 
         std::wstringstream output;
 
@@ -117,7 +117,7 @@ namespace Exception
             << L"         [Hex ] 0x" << std::hex << ErrorCode << L"\n"
             << L"->";
 
-              if (::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        if (::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                              nullptr,
                              ErrorCode,
                              MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),

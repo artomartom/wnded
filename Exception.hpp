@@ -20,18 +20,17 @@
 #define H_CHECK(hr, Note) (Exception::Check(Exception::ToFile(L"" __FILE__), __LINE__, Exception::ToFunc(L"" #hr), hr, Note))
 #define H_OK(hr) (!(H_CHECK(hr, L"")))
 #define H_FAIL(hr) ((H_CHECK(hr, L"")))
-#define W32_ERR(expr, Note) \
-    ::SetLastError(0);      \
-    expr;                   \
-    H_CHECK(HRESULT_FROM_WIN32(::GetLastError()), Note)
-// H_CHECK( ::GetLastError(), Note)
-#define W32(expr) W32_ERR(expr, L"W32")
+#define W32(expr)      \
+    ::SetLastError(0); \
+    expr;              \
+    H_CHECK(HRESULT_FROM_WIN32(::GetLastError()), L"W32")
+#define W32_ERR(Error, Note) H_CHECK(HRESULT_FROM_WIN32(Error), Note)
 #else
-
-#define W32(expr) (expr)        // check winapi err
-#define RLS_ONLY(expr) (expr)   //    expr is  part of   release build  only ( )
+#define W32_ERR(Error, Note)    // todo :do something 
+#define W32(expr)  expr         // check winapi err
+#define RLS_ONLY(expr)  expr    //    expr is  part of   release build  only ( )
 #define DBG_ONLY(expr) 0        //    expr is not a part of   release build
-#define H_ERR(hr, Note) (hr)    //
+#define H_ERR(hr, Note) hr    //
 #define H_OK(hr) (!(hr))        //  formats hr errors (if any) in debug\profile mode  ( macro does not provide any error checking  to caller, so its his responsibility  to do so  )
 #define H_FAIL(hr) ((bool)(hr)) //
 #endif                          //  defined(_DEBUG) || defined(PROFILE)
