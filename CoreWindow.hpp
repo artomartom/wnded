@@ -70,7 +70,7 @@ namespace Window
 #pragma endregion // EventArgs
 
   template <class TImpl>
-  class CCoreWindow : private TImpl
+  class CCoreWindow : public TImpl
   {
 
   public:
@@ -79,7 +79,7 @@ namespace Window
     CCoreWindow(CCoreWindow &&) = delete;
     CCoreWindow &operator=(const CCoreWindow &) = delete;
     CCoreWindow &operator=(CCoreWindow &&) = delete;
-    ~CCoreWindow() { ::DestroyWindow(TImpl::m_hWnd); };
+    ~CCoreWindow() { ::DestroyWindow(TImpl::m_Handle); };
 
     CCoreWindow(HINSTANCE hinst, const RECT rect)
     {
@@ -99,7 +99,7 @@ namespace Window
       ::AdjustWindowRectEx(&MainRect, hwin_style, 0, hwin_style_ex);
 
       CreationArgs CreateArgs{this, hinst, rect};
-      TImpl::m_hWnd = ::CreateWindowExW(
+      ::CreateWindowExW(
           hwin_style_ex,
           wincl.lpszClassName, 0,
           hwin_style,
@@ -129,6 +129,7 @@ namespace Window
                  {
                    CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
                    s_pthis = reinterpret_cast<CCoreWindow *>(args->pCoreWindow);
+                   s_pthis->m_Handle = hWnd;
                    s_pthis->TImpl::OnCreate(*args);
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
@@ -145,6 +146,8 @@ namespace Window
         /*window size*/
         PROCCASE(WM_SIZE, false, s_pthis->TImpl::OnSizeChanged({wParam, lParam}));
         PROCCASE(WM_SIZING, true, s_pthis->TImpl::OnSizing(reinterpret_cast<RECT *>(lParam)));
+        PROCCASE(WM_ENTERSIZEMOVE, false, { ::Sleep(30); });
+        PROCCASE(WM_EXITSIZEMOVE, false, { ::Sleep(30); });
 
         /*user input*/
         PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
@@ -171,7 +174,7 @@ namespace Window
   {
     ::MSG m_messages{};
 
-    while (::GetMessageW(&m_messages, 0, 0, 0))
+    while (::GetMessageW(&m_messages, window.m_Handle, 0, 0))
     {
 
       ::TranslateMessage(&m_messages);
@@ -198,7 +201,7 @@ public:
   void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
 
 protected:
-  HWND m_hWnd{nullptr};
+  HWND m_Handle{nullptr};
 };
 
 #endif
