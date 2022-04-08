@@ -27,6 +27,7 @@
 #define W32_ERR(Error, Note) H_CHECK(HRESULT_FROM_WIN32(Error), Note)
 #else
 #define W32_ERR(Error, Note)    // todo :do something 
+#define H_CHECK(hr, Note) hr
 #define W32(expr)  expr         // check winapi err
 #define RLS_ONLY(expr)  expr    //    expr is  part of   release build  only ( )
 #define DBG_ONLY(expr) 0        //    expr is not a part of   release build

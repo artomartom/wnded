@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <assert.h>
+
 
 // decl
 #include "Wrapper.hpp"

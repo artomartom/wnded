@@ -35,13 +35,14 @@ namespace Timer
     };
 
     void TimeStamp() const noexcept {};
+
     void Count() noexcept
     {
       long long ElapsedTicks{};
       ::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER *>(&ElapsedTicks));
       ElapsedTicks = ElapsedTicks - m_GlblTime;
-      Intrnl_Time.m_Delta += (ElapsedTicks / static_cast<double>(m_Frequency));
-      Intrnl_Time.m_SinceStart += (ElapsedTicks) / m_Frequency;
+      Intrnl_Time.m_Delta = (ElapsedTicks / static_cast<double>(m_Frequency));
+      Intrnl_Time.m_SinceStart += (ElapsedTicks * 1000) / m_Frequency;
       m_GlblTime += ElapsedTicks;
     };
 

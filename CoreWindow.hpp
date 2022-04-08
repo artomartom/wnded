@@ -79,7 +79,7 @@ namespace Window
     CCoreWindow(CCoreWindow &&) = delete;
     CCoreWindow &operator=(const CCoreWindow &) = delete;
     CCoreWindow &operator=(CCoreWindow &&) = delete;
-    ~CCoreWindow() { ::DestroyWindow(TImpl::m_Handle); };
+    ~CCoreWindow() {  TImpl::OnClose();::DestroyWindow(TImpl::m_Handle); };
 
     CCoreWindow(HINSTANCE hinst, const RECT rect)
     {
@@ -134,7 +134,7 @@ namespace Window
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
         PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
-        PROCCASE(WM_CLOSE, false, {s_pthis->TImpl::OnClose(); ::PostQuitMessage(0);  s_pthis =nullptr; });
+        PROCCASE(WM_CLOSE, false, { ::PostQuitMessage(0);  s_pthis =nullptr; });
         /*visual*/
         PROCCASE(WM_ERASEBKGND, true, {});
         PROCCASE(WM_PAINT, false,
