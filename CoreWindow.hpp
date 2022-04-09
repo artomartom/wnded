@@ -52,6 +52,13 @@ namespace Window
     ::LPARAM lParam{};
   };
 
+  struct KeyEventArgs
+  {
+    KeyEventArgs(::WPARAM wParam)
+        : m_VirtualKey{wParam} {};
+    ::WPARAM m_VirtualKey{}; // Key Code   ...
+  };
+
   struct ActivateArgs
   {
     ActivateArgs(WPARAM wParam)
@@ -79,7 +86,11 @@ namespace Window
     CCoreWindow(CCoreWindow &&) = delete;
     CCoreWindow &operator=(const CCoreWindow &) = delete;
     CCoreWindow &operator=(CCoreWindow &&) = delete;
-    ~CCoreWindow() {  TImpl::OnClose();::DestroyWindow(TImpl::m_Handle); };
+    ~CCoreWindow()
+    {
+      TImpl::OnClose();
+      ::DestroyWindow(TImpl::m_Handle);
+    };
 
     CCoreWindow(HINSTANCE hinst, const RECT rect)
     {
@@ -134,7 +145,7 @@ namespace Window
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
         PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
-        PROCCASE(WM_CLOSE, false, { ::PostQuitMessage(0);  s_pthis =nullptr; });
+        PROCCASE(WM_CLOSE, false, { ::PostQuitMessage(0); });
         /*visual*/
         PROCCASE(WM_ERASEBKGND, true, {});
         PROCCASE(WM_PAINT, false,
@@ -152,7 +163,7 @@ namespace Window
         /*user input*/
         PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
         PROCCASE(WM_MOUSEMOVE, false, s_pthis->OnCursorMove());
-        PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1 << 31))) ? s_pthis->OnKeyStroke() : s_pthis->OnKeyHold(); });
+        PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1 << 31))) ? s_pthis->OnKeyStroke({wParam}) : s_pthis->OnKeyHold({wParam}); });
       };
 
       if (message > WM_APP)
@@ -191,8 +202,8 @@ public:
   void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {};
   void OnPaint() noexcept {};
   void OnClose() noexcept {};
-  void OnKeyHold() noexcept {};
-  void OnKeyStroke() noexcept {};
+  void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept {};
+  void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept {};
   void OnCursorMove() noexcept {};
   void OnSizing(_Out_ RECT *pRect) noexcept {};
   void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept {};
@@ -200,8 +211,11 @@ public:
   void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
   void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
 
+  void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
+
 protected:
   HWND m_Handle{nullptr};
+  bool m_IsVisible{};
 };
 
 #endif
