@@ -110,10 +110,7 @@ namespace Timer
     T Count() noexcept
     {
       Count();
-      if (m_PausedAt)
-        return static_cast<T>(m_PausedAt);
-      else
-        return Intrnl_Time.m_SinceStart;
+      return m_PausedAt ? static_cast<T>(m_PausedAt) : Intrnl_Time.m_SinceStart;
     };
 
   protected:
