@@ -4,6 +4,9 @@
 namespace Timer
 {
 
+  using immediate = std::integral_constant<bool, true>;
+  using deferred = std::integral_constant<bool, false>;
+
   inline SYSTEMTIME GetLocalTime() noexcept
   {
     SYSTEMTIME tmp{};
@@ -20,7 +23,7 @@ namespace Timer
   class CTimer
   {
   public:
-    explicit CTimer()
+    explicit CTimer(immediate = immediate{})
         : m_Frequency{Timer::QueryPerformanceFrequency()},
           m_GlblTime{},
           Intrnl_Time{}
@@ -29,10 +32,15 @@ namespace Timer
       Intrnl_Time = {0, 0}; //  discard  time pass  from OS's start, so timer counts his life time
     };
 
-    virtual ~CTimer()
+    explicit CTimer(deferred)
+        : CTimer()
     {
-      Count();
+      Intrnl_Time.m_Delta = 0;
+      Intrnl_Time.m_SinceStart = 0;
+      m_GlblTime = 0;
     };
+
+    virtual ~CTimer() = default;
 
     void TimeStamp() const noexcept {};
 
@@ -44,6 +52,27 @@ namespace Timer
       Intrnl_Time.m_Delta = (ElapsedTicks / static_cast<double>(m_Frequency));
       Intrnl_Time.m_SinceStart += (ElapsedTicks * 1000) / m_Frequency;
       m_GlblTime += ElapsedTicks;
+    };
+
+    void Pause() noexcept
+    {
+      m_PausedAt = Intrnl_Time.m_SinceStart;
+    };
+    void Unpause() noexcept
+    {
+      Intrnl_Time.m_SinceStart -= Intrnl_Time.m_SinceStart - m_PausedAt;
+      m_PausedAt = 0;
+    };
+
+    /**
+     * Unpause if pause, and vice-versa
+     */
+    void Switch() noexcept
+    {
+      if (m_PausedAt)
+        Unpause();
+      else
+        Pause();
     };
 
     void Reset() noexcept
@@ -65,6 +94,9 @@ namespace Timer
     CTimer(CTimer &&) = default;
     CTimer &operator=(CTimer &&) = default;
 
+    template <typename T>
+    T GetDelta() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
+
     // get time  since last call to either
     template <typename T>
     T CountDelta() noexcept
@@ -73,12 +105,15 @@ namespace Timer
       return static_cast<T>(Intrnl_Time.m_Delta);
     };
 
-    // get time since object creation
+    // gets time since object creation,  if  paused gets time when was pause
     template <typename T>
     T Count() noexcept
     {
       Count();
-      return static_cast<T>(Intrnl_Time.m_SinceStart);
+      if (m_PausedAt)
+        return static_cast<T>(m_PausedAt);
+      else
+        return Intrnl_Time.m_SinceStart;
     };
 
   protected:
@@ -86,6 +121,7 @@ namespace Timer
     const long long m_Frequency{};
 
     long long m_GlblTime{}; // since OS's start + since object creation, aka what  ::QueryPerformanceFrequency returned in last Count()
+    long long m_PausedAt{};
 
     struct
     {

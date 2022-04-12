@@ -210,8 +210,9 @@ public:
   void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
   void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
   void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
-
   void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
+
+  void SetHeader(const char *text) { ::SetWindowTextA(m_Handle, text); };
 
 protected:
   HWND m_Handle{nullptr};
