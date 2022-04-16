@@ -141,7 +141,10 @@ namespace Window
                    CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
                    s_pthis = reinterpret_cast<CCoreWindow *>(args->pCoreWindow);
                    s_pthis->m_Handle = hWnd;
-                   s_pthis->TImpl::OnCreate(*args);
+                   if (H_FAIL(s_pthis->TImpl::OnCreate(*args)))
+                   {
+                     return -1;
+                   };
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
         PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
@@ -199,20 +202,26 @@ namespace Window
 class CoreApp
 {
 public:
-  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {};
-  void OnPaint() noexcept {};
-  void OnClose() noexcept {};
-  void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept {};
-  void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept {};
-  void OnCursorMove() noexcept {};
-  void OnSizing(_Out_ RECT *pRect) noexcept {};
-  void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept {};
-  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
-  void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
-  void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
+  /**
+   * Event proc message handlers
+   *
+   */
+  ::HRESULT OnCreate(_In_ const ::Window::CreationArgs &args) noexcept { return S_OK; };
+  ::HRESULT OnPaint() noexcept { return S_OK; };
+  ::HRESULT OnClose() noexcept { return S_OK; };
+  ::HRESULT OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept { return S_OK; };
+  ::HRESULT OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept { return S_OK; };
+  ::HRESULT OnCursorMove() noexcept { return S_OK; };
+  ::HRESULT OnSizing(_Out_ RECT *pRect) noexcept { return S_OK; };
+  ::HRESULT OnCommand(_In_ const ::Window::CommandArgs &args) noexcept { return S_OK; };
+  ::HRESULT OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept { return S_OK; };
+  ::HRESULT OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept { return S_OK; };
+  ::HRESULT OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept { return S_OK; };
+
   void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
 
-  void SetHeader(const char *text) { ::SetWindowTextA(m_Handle, text); };
+  bool IsValid()noexcept{ return m_Handle !=0; };
+  void SetHeader(const char *text)const noexcept { ::SetWindowTextA(m_Handle, text); };
 
 protected:
   HWND m_Handle{nullptr};
@@ -220,3 +229,4 @@ protected:
 };
 
 #endif
+ 
