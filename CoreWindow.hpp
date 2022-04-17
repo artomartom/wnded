@@ -224,7 +224,13 @@ protected:
   HWND m_Handle{nullptr};
   bool m_IsVisible{};
   DWORD m_StileEx{WS_EX_OVERLAPPEDWINDOW};
-  DWORD m_Stile{WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_MINIMIZE};
+  DWORD m_Stile{WS_OVERLAPPED |
+                WS_CAPTION |
+                WS_SYSMENU |
+                WS_MINIMIZEBOX |
+                WS_MAXIMIZEBOX |
+                WS_CAPTION |
+                WS_MINIMIZE};
 };
 
 #endif
