@@ -103,17 +103,14 @@ namespace Window
           L"TheWindowName", 0};
       ::RegisterClassExW(&wincl);
 
-      constexpr DWORD hwin_style = WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_MINIMIZE;
-      constexpr DWORD hwin_style_ex = WS_EX_OVERLAPPEDWINDOW;
-
       RECT MainRect{rect};
-      ::AdjustWindowRectEx(&MainRect, hwin_style, 0, hwin_style_ex);
+      ::AdjustWindowRectEx(&MainRect, TImpl::m_Stile, 0, TImpl::m_StileEx);
 
       CreationArgs CreateArgs{this, hinst, rect};
       ::CreateWindowExW(
-          hwin_style_ex,
+          TImpl::m_StileEx,
           wincl.lpszClassName, 0,
-          hwin_style,
+          TImpl::m_Stile,
           MainRect.left, MainRect.top,
           RECTWIDTH(MainRect),
           RECTHEIGHT(MainRect),
@@ -220,13 +217,14 @@ public:
 
   void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
 
-  bool IsValid()noexcept{ return m_Handle !=0; };
-  void SetHeader(const char *text)const noexcept { ::SetWindowTextA(m_Handle, text); };
+  bool IsValid() noexcept { return m_Handle != 0; };
+  void SetHeader(const char *text) const noexcept { ::SetWindowTextA(m_Handle, text); };
 
 protected:
   HWND m_Handle{nullptr};
   bool m_IsVisible{};
+  DWORD m_StileEx{WS_EX_OVERLAPPEDWINDOW};
+  DWORD m_Stile{WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_MINIMIZE};
 };
 
 #endif
- 
