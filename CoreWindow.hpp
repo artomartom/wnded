@@ -22,12 +22,12 @@ namespace Window
   {
 
     SizeChangedArgs(::WPARAM wParam, ::LPARAM lParam)
-        : m_Type{static_cast<e_Type>(wParam)}, m_New{LOWORD(lParam), HIWORD(lParam)} {};
+        : m_Type{static_cast<Type>(wParam)}, m_New{LOWORD(lParam), HIWORD(lParam)} {};
     /*args*/
-    enum e_Type : ::WPARAM
+    enum Type : ::WPARAM
     {
       MaxHide = SIZE_MAXHIDE,     // Message is sent to all pop-up windows when some other window is maximized.
-      Maxinized = SIZE_MAXIMIZED, // The window has been maximized.
+      Maximized = SIZE_MAXIMIZED, // The window has been maximized.
       MaxShow = SIZE_MAXSHOW,     // Message is sent to all pop-up windows when some other window has been restored to its former size.
       Minimized = SIZE_MINIMIZED, // The window has been minimized.
       Restored = SIZE_RESTORED,   // The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
@@ -65,7 +65,7 @@ namespace Window
         : m_Activate{LOWORD(wParam)},
           m_IsMinimized{static_cast<bool>(HIWORD(wParam))} {};
     /*args*/
-    enum e_Activate : ::WPARAM
+    enum Activate : ::WPARAM
     {
       Activated = WA_ACTIVE,           // Activated by some method other than a mouse click (  by a call to the SetActiveWindow function or by use of the keyboard interface to select the window).
       ClickActivated = WA_CLICKACTIVE, // Activated by a mouse click.
@@ -138,10 +138,7 @@ namespace Window
                    CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
                    s_pthis = reinterpret_cast<CCoreWindow *>(args->pCoreWindow);
                    s_pthis->m_Handle = hWnd;
-                   if (H_FAIL(s_pthis->TImpl::OnCreate(*args)))
-                   {
-                     return -1;
-                   };
+                   s_pthis->TImpl::OnCreate(*args);
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
         PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
@@ -203,17 +200,17 @@ public:
    * Event proc message handlers
    *
    */
-  ::HRESULT OnCreate(_In_ const ::Window::CreationArgs &args) noexcept { return S_OK; };
-  ::HRESULT OnPaint() noexcept { return S_OK; };
-  ::HRESULT OnClose() noexcept { return S_OK; };
-  ::HRESULT OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept { return S_OK; };
-  ::HRESULT OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept { return S_OK; };
-  ::HRESULT OnCursorMove() noexcept { return S_OK; };
-  ::HRESULT OnSizing(_Out_ RECT *pRect) noexcept { return S_OK; };
-  ::HRESULT OnCommand(_In_ const ::Window::CommandArgs &args) noexcept { return S_OK; };
-  ::HRESULT OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept { return S_OK; };
-  ::HRESULT OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept { return S_OK; };
-  ::HRESULT OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept { return S_OK; };
+  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {};
+  void OnPaint() noexcept {};
+  void OnClose() noexcept {};
+  void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept {};
+  void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept {};
+  void OnCursorMove() noexcept {};
+  void OnSizing(_Out_ RECT *pRect) noexcept {};
+  void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept {};
+  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
+  void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
+  void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
 
   void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
 
