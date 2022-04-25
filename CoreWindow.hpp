@@ -224,6 +224,7 @@ protected:
   DWORD m_Stile{WS_OVERLAPPED |
                 WS_CAPTION |
                 WS_SYSMENU |
+                WS_THICKFRAME |
                 WS_MINIMIZEBOX |
                 WS_MAXIMIZEBOX |
                 WS_CAPTION |
