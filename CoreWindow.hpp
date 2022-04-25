@@ -77,22 +77,22 @@ namespace Window
 #pragma endregion // EventArgs
 
   template <class TImpl>
-  class CCoreWindow : public TImpl
+  class CoreWindow : public TImpl
   {
 
   public:
-    CCoreWindow() = delete;
-    CCoreWindow(const CCoreWindow &) = delete;
-    CCoreWindow(CCoreWindow &&) = delete;
-    CCoreWindow &operator=(const CCoreWindow &) = delete;
-    CCoreWindow &operator=(CCoreWindow &&) = delete;
-    ~CCoreWindow()
+    CoreWindow() = delete;
+    CoreWindow(const CoreWindow &) = delete;
+    CoreWindow(CoreWindow &&) = delete;
+    CoreWindow &operator=(const CoreWindow &) = delete;
+    CoreWindow &operator=(CoreWindow &&) = delete;
+    ~CoreWindow()
     {
       TImpl::OnClose();
       ::DestroyWindow(TImpl::m_Handle);
     };
 
-    CCoreWindow(HINSTANCE hinst, const RECT rect)
+    CoreWindow(HINSTANCE hinst, const RECT rect)
     {
 
       WNDCLASSEXW wincl{
@@ -117,9 +117,9 @@ namespace Window
           HWND_DESKTOP, nullptr, nullptr, &CreateArgs);
     };
 
-  private: // non-member functions
-    template <class TCoreWindow>
-    friend int __stdcall Run(const TCoreWindow &window);
+  private:
+    template <class CoreWindowSpec>
+    friend int __stdcall Run(const CoreWindowSpec &window);
 
     inline static ::LRESULT __stdcall CoreProcedure(::HWND hWnd, ::UINT message, ::WPARAM wParam, ::LPARAM lParam)
     {
@@ -128,7 +128,7 @@ namespace Window
     action;                                   \
     return boolreturn
 
-      static CCoreWindow *s_pthis{};
+      static CoreWindow *s_pthis{};
 
       switch (message)
       {
@@ -136,7 +136,7 @@ namespace Window
         PROCCASE(WM_CREATE, false,
                  {
                    CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
-                   s_pthis = reinterpret_cast<CCoreWindow *>(args->pCoreWindow);
+                   s_pthis = reinterpret_cast<CoreWindow *>(args->pCoreWindow);
                    s_pthis->m_Handle = hWnd;
                    s_pthis->TImpl::OnCreate(*args);
                    ::ShowWindow(hWnd, SW_NORMAL);
@@ -177,8 +177,8 @@ namespace Window
     };
   };
 
-  template <class TCoreWindow>
-  int __stdcall Run(const TCoreWindow &window)
+  template <class CoreWindowSpec>
+  int __stdcall Run(const CoreWindowSpec &window)
   {
     ::MSG m_messages{};
 
