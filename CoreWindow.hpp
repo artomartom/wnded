@@ -182,7 +182,7 @@ namespace Window
   {
     ::MSG m_messages{};
 
-    while (::GetMessageW(&m_messages, window.m_Handle, 0, 0))
+    while (::GetMessageW(&m_messages, 0, 0, 0))
     {
 
       ::TranslateMessage(&m_messages);
