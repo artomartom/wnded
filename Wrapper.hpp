@@ -7,7 +7,7 @@ namespace Wrapper
 
     class HFile;
 
-    struct Size;
+    
 
 };
 #endif
