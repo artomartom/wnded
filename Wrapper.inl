@@ -63,7 +63,7 @@ namespace Wrapper
         {
             DWORD numbytes{};
             ::WriteFile(m_file, text.data(),
-                        text.size() * 2,
+                        static_cast<DWORD>(text.size() * 2),
                         &numbytes, nullptr);
             return numbytes;
         };
