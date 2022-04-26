@@ -32,7 +32,7 @@ namespace Writer
     constexpr std::wstring_view prefix();
 
     template <eType T, eOut O>
-    class Message;
+    struct Message;
 
     template <eOut OT>
     using Log = Message<eType::Log, OT>;
