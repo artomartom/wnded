@@ -32,9 +32,10 @@
 #define RLS_ONLY(expr)  expr    //    expr is  part of   release build  only ( )
 #define DBG_ONLY(expr) 0        //    expr is not a part of   release build
 #define H_ERR(hr, Note) hr    //
-#define H_OK(hr) (!(hr))        //  formats hr errors (if any) in debug\profile mode  ( macro does not provide any error checking  to caller, so its his responsibility  to do so  )
-#define H_FAIL(hr) ((bool)(hr)) //
+#define H_OK(hr) (SUCCEEDED(hr))        //  formats hr errors (if any) in debug\profile mode 
+#define H_FAIL(hr) (FAILED(hr)) //
 #endif                          //  defined(_DEBUG) || defined(PROFILE)
+
 
 namespace Exception
 {
