@@ -160,7 +160,7 @@ namespace Window
         /*user input*/
         PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
         PROCCASE(WM_MOUSEMOVE, false, s_pthis->OnCursorMove());
-        PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1 << 31))) ? s_pthis->OnKeyStroke({wParam}) : s_pthis->OnKeyHold({wParam}); });
+        PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1LL << 31))) ? s_pthis->OnKeyStroke({wParam}) : s_pthis->OnKeyHold({wParam}); });
       };
 
       if (message > WM_APP)
