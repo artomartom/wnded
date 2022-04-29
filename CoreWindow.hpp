@@ -147,9 +147,8 @@ namespace Window
         PROCCASE(WM_ERASEBKGND, true, {});
         PROCCASE(WM_PAINT, false,
                  {
-                   ::BeginPaint(hWnd, nullptr);
+                   ::ValidateRect(hWnd, 0);
                    s_pthis->TImpl::OnPaint();
-                   ::EndPaint(hWnd, nullptr);
                  };);
         /*window size*/
         PROCCASE(WM_SIZE, false, s_pthis->TImpl::OnSizeChanged({wParam, lParam}));
