@@ -206,7 +206,7 @@ public:
   void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept {};
   void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept {};
   void OnCursorMove() noexcept {};
-  void OnSizing(_inOut_ RECT *pRect) noexcept {};
+  void OnSizing(_inout_ RECT *pRect) noexcept {};
   void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept {};
   void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
   void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
