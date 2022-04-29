@@ -39,10 +39,10 @@ namespace Window
   struct AppEventArgs
   {
     AppEventArgs(::UINT message, ::WPARAM wParam, ::LPARAM lParam)
-        : message{message}, wParam{wParam}, lParam{lParam} {};
-    ::UINT message{};
+        :  wParam{wParam}, lParam{lParam},message{message} {};
     ::WPARAM wParam{};
     ::LPARAM lParam{};
+    ::UINT message{};
   };
   struct CommandArgs
   {
@@ -65,7 +65,7 @@ namespace Window
         : m_Activate{LOWORD(wParam)},
           m_IsMinimized{static_cast<bool>(HIWORD(wParam))} {};
     /*args*/
-    enum Activate : ::WPARAM
+    enum Activate : ::WORD
     {
       Activated = WA_ACTIVE,           // Activated by some method other than a mouse click (  by a call to the SetActiveWindow function or by use of the keyboard interface to select the window).
       ClickActivated = WA_CLICKACTIVE, // Activated by a mouse click.
