@@ -30,7 +30,7 @@ namespace Wrapper
         HFile(HFile &&) = delete;
         HFile &operator=(HFile &&) = delete;
         HANDLE Get() const noexcept { return m_file; };
-        bool IsValid() const noexcept { return m_file != 0; };
+        bool IsValid() const noexcept { return m_file != 0ull; }; // Writer.inl(33,22): warning C4365: 'argument': conversion from 'int' to 'const unsigned __int64', signed/unsigned mismatch
 
         void Attach(HANDLE file) noexcept
         {

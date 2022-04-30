@@ -3,7 +3,7 @@
 
 namespace Exception
 {
-    inline void TranslateExceptionCode(DWORD Code)
+    inline void TranslateExceptionCode(_In_ ::DWORD Code)
     {
         std::wstringstream output;
         output
@@ -15,7 +15,7 @@ namespace Exception
 
         HMODULE HNTStatus{GetModuleHandleW(L"NTDLL.DLL")};
 
-        wchar_t *pMessageBuffer{nullptr};
+        LPWSTR *pMessageBuffer{nullptr};
 
         if (HNTStatus != 0)
         {
@@ -31,11 +31,23 @@ namespace Exception
                     0,
                     nullptr))
             {
-
                 output << pMessageBuffer;
+                ::LocalFree(pMessageBuffer);
+            }
+            else if (::FormatMessageW(
+                         FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                             FORMAT_MESSAGE_FROM_SYSTEM,
+                         0, Code,
+                         MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+                         (LPWSTR)&pMessageBuffer,
+                         0, nullptr))
+            {
+                output << pMessageBuffer;
+                ::LocalFree(pMessageBuffer);
             }
             else
             {
+
                 output << L"(FORMATTING FAILED)\n";
             }
         }
@@ -63,7 +75,10 @@ namespace Exception
         {
             typename std::is_function<PF>::value_type res = std::invoke(pfunction, args...);
             if (res != 0)
-                H_ERR(res, L"Application invokation Exited with result");
+            {
+                CONSOLE_ONLY(Error<Console>::Write(L"Application Exited with result: ", res));
+                GUI_ONLY(Error<File>::Write(L"Application Exited with result: ", res));
+            };
             return res;
         }
         __except (Filter(GetExceptionInformation(), Record))
@@ -107,7 +122,7 @@ namespace Exception
 
         std::wstringstream output;
 
-        wchar_t *MsgBuf{nullptr};
+        LPWSTR *MsgBuf{nullptr};
         output
             << L"\n"
             << L"Error    [File] " << File << L"\n"
@@ -119,7 +134,7 @@ namespace Exception
 
         if (::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                              nullptr,
-                             ErrorCode,
+                             static_cast<DWORD>(ErrorCode), // Exception.inl(126,1): warning C4365: 'argument': conversion from 'HRESULT' to 'DWORD', signed/unsigned mismatch
                              MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
                              (LPWSTR)&MsgBuf,
                              0,

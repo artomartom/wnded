@@ -39,7 +39,7 @@ namespace Window
   struct AppEventArgs
   {
     AppEventArgs(::UINT message, ::WPARAM wParam, ::LPARAM lParam)
-        :  wParam{wParam}, lParam{lParam},message{message} {};
+        : wParam{wParam}, lParam{lParam}, message{message} {};
     ::WPARAM wParam{};
     ::LPARAM lParam{};
     ::UINT message{};
@@ -199,17 +199,17 @@ public:
    * Event proc message handlers
    *
    */
-  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {};
-  void OnPaint() noexcept {};
-  void OnClose() noexcept {};
-  void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept {};
-  void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept {};
-  void OnCursorMove() noexcept {};
-  void OnSizing(_Inout_ RECT *pRect) noexcept {};
-  void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept {};
-  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept {};
-  void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept {};
-  void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept {};
+  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {/*UNREFERENCED_PARAMETER(args);*/};
+  void OnPaint() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
+  void OnClose() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
+  void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
+  void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
+  void OnCursorMove() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
+  void OnSizing(_Inout_updates_opt_(1) RECT *pRect) noexcept { UNREFERENCED_PARAMETER(pRect); };
+  void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
+  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
+  void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
+  void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
 
   void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
 

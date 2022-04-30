@@ -33,10 +33,8 @@ namespace Timer
     };
 
     explicit CTimer(deferred)
-        : CTimer()
+        : CTimer(immediate{})
     {
-      Intrnl_Time.m_Delta = 0;
-      Intrnl_Time.m_SinceStart = 0;
       m_GlblTime = 0;
     };
 
@@ -47,9 +45,9 @@ namespace Timer
     void Count() noexcept
     {
       long long ElapsedTicks{};
-      ::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER *>(&ElapsedTicks));
+      ::QueryPerformanceCounter(reinterpret_cast<::LARGE_INTEGER *>(&ElapsedTicks));
       ElapsedTicks = ElapsedTicks - m_GlblTime;
-      Intrnl_Time.m_Delta = (ElapsedTicks / static_cast<double>(m_Frequency));
+      Intrnl_Time.m_Delta = (static_cast<double>(ElapsedTicks) / static_cast<double>(m_Frequency));
       Intrnl_Time.m_SinceStart += (ElapsedTicks * 1000) / m_Frequency;
       m_GlblTime += ElapsedTicks;
     };
@@ -86,14 +84,12 @@ namespace Timer
           m_GlblTime{other.m_GlblTime},
           Intrnl_Time{other.Intrnl_Time} {};
     CTimer operator=(const CTimer &other) { return CTimer{other}; };
-    bool operator>(const CTimer &other) { return Intrnl_Time.m_SinceStart > other.Intrnl_Time.m_SinceStart; };
-    bool operator<(const CTimer &other) { return Intrnl_Time.m_SinceStart < other.Intrnl_Time.m_SinceStart; };
-    bool operator==(const CTimer &other) { return Intrnl_Time.m_SinceStart == other.Intrnl_Time.m_SinceStart; };
-    bool operator!=(const CTimer &other) { return Intrnl_Time.m_SinceStart != other.Intrnl_Time.m_SinceStart; };
+
+    std::strong_ordering operator<=>(const CTimer &other) { return Intrnl_Time.m_SinceStart <=> other.Intrnl_Time.m_SinceStart; };
 
     CTimer(CTimer &&) = default;
     CTimer &operator=(CTimer &&) = default;
-
+    // warning C5027: 'Timer::CTimer': move assignment operator was implicitly defined as deleted
     template <typename T>
     T GetDelta() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
 
