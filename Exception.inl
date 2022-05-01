@@ -122,7 +122,7 @@ namespace Exception
 
         std::wstringstream output;
 
-        LPWSTR *MsgBuf{nullptr};
+        WCHAR MsgBuf[1024]{};
         output
             << L"\n"
             << L"Error    [File] " << File << L"\n"
@@ -132,12 +132,12 @@ namespace Exception
             << L"         [Hex ] 0x" << std::hex << ErrorCode << L"\n"
             << L"->";
 
-        if (::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        if (::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
                              nullptr,
                              static_cast<DWORD>(ErrorCode), // Exception.inl(126,1): warning C4365: 'argument': conversion from 'HRESULT' to 'DWORD', signed/unsigned mismatch
                              MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
                              (LPWSTR)&MsgBuf,
-                             0,
+                             _countof(MsgBuf),
                              nullptr))
         {
             output << MsgBuf;
