@@ -42,7 +42,7 @@ namespace Window
         : wParam{wParam}, lParam{lParam}, message{message} {};
     ::WPARAM wParam{};
     ::LPARAM lParam{};
-    ::UINT message{};
+    ::ULONG message{};
   };
   struct CommandArgs
   {
@@ -199,7 +199,7 @@ public:
    * Event proc message handlers
    *
    */
-  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept {/*UNREFERENCED_PARAMETER(args);*/};
+  void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnPaint() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
   void OnClose() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
   void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };

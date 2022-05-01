@@ -26,11 +26,11 @@ namespace Writer
         std::wstring out{L"00:00:00|00.00| "};
         WORD t[]{
             time.wHour, time.wMinute, time.wSecond, time.wDay, time.wMonth};
-        int i{};
+        UINT i{};
         for (auto &each : t)
         {
-            out[i] += each / 10;
-            out[i + 1] += each % 10;
+            out[i] += each / 10u;
+            out[i + 1] += each % 10u;
             i += 3;
         };
         return out;
