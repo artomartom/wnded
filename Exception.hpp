@@ -26,7 +26,7 @@
 #define W32_ERR(Error, Note) H_CHECK(HRESULT_FROM_WIN32(Error), Note)
 #else
 #define H_ERR(hr, Note) hr         //
-#define H_CHECK(hr, Note) hr       // true == ok
+#define H_CHECK(hr, Note) (hr == S_OK)    // true == ok
 #define H_OK(hr) (hr == S_OK)      //  formats hr errors (if any) in debug\profile mode
 #define H_FAIL(hr) (hr != S_OK)    //
 #define W32(expr) expr             // check winapi err
