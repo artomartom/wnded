@@ -153,7 +153,6 @@ namespace Exception
         CONSOLE_ONLY(::Writer::Error<Writer::Console>::Write(output.str()));
         GUI_ONLY(::Writer::Error<Writer::File>::Write(output.str()));
 
-        ::LocalFree(MsgBuf);
         return ErrorCode;
     };
 };
