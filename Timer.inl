@@ -1,7 +1,7 @@
 #ifndef TIMER_INL
 #define TIMER_INL
 
-namespace Timer
+namespace Time
 {
 
   using immediate = std::integral_constant<bool, true>;
@@ -20,11 +20,11 @@ namespace Timer
     return tmp.QuadPart;
   };
 
-  class CTimer
+  class Timer
   {
   public:
-    explicit CTimer(immediate = immediate{})
-        : m_Frequency{Timer::QueryPerformanceFrequency()},
+    explicit Timer(immediate = immediate{})
+        : m_Frequency{Time::QueryPerformanceFrequency()},
           m_GlblTime{},
           Intrnl_Time{}
     {
@@ -32,13 +32,13 @@ namespace Timer
       Intrnl_Time = {0, 0}; //  discard  time pass  from OS's start, so timer counts his life time
     };
 
-    explicit CTimer(deferred)
-        : CTimer(immediate{})
+    explicit Timer(deferred)
+        : Timer(immediate{})
     {
       m_GlblTime = 0;
     };
 
-    virtual ~CTimer() = default;
+    virtual ~Timer() = default;
 
     void TimeStamp() const noexcept {};
 
@@ -75,21 +75,21 @@ namespace Timer
 
     void Reset() noexcept
     {
-      CTimer tmp{};
+      Timer tmp{};
       swap(tmp, *this);
     };
 
-    CTimer(const CTimer &other)
+    Timer(const Timer &other)
         : m_Frequency{other.m_Frequency},
           m_GlblTime{other.m_GlblTime},
           Intrnl_Time{other.Intrnl_Time} {};
-    CTimer operator=(const CTimer &other) { return CTimer{other}; };
+    Timer operator=(const Timer &other) { return Timer{other}; };
 
-    std::strong_ordering operator<=>(const CTimer &other) { return Intrnl_Time.m_SinceStart <=> other.Intrnl_Time.m_SinceStart; };
+    std::strong_ordering operator<=>(const Timer &other) { return Intrnl_Time.m_SinceStart <=> other.Intrnl_Time.m_SinceStart; };
 
-    CTimer(CTimer &&) = default;
-    CTimer &operator=(CTimer &&) = default;
-    // warning C5027: 'Timer::CTimer': move assignment operator was implicitly defined as deleted
+    Timer(Timer &&) = default;
+    Timer &operator=(Timer &&) = default;
+    // warning C5027: 'Timer::Timer': move assignment operator was implicitly defined as deleted
     template <typename T>
     T GetDelta() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
 
@@ -122,9 +122,9 @@ namespace Timer
       double m_Delta{};         // Delta(1.000000=1 second)
     } Intrnl_Time;
 
-    friend void swap(CTimer &Left, CTimer &Right) noexcept
+    friend void swap(Timer &Left, Timer &Right) noexcept
     {
-      CTimer Tmp{std::move(Left)};
+      Timer Tmp{std::move(Left)};
       Left = std::move(Right);
       Right = std::move(Tmp);
     };

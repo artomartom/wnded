@@ -21,7 +21,7 @@ namespace Writer
 
     inline std::wstring GetSysTime()
     {
-        auto time{Timer::GetLocalTime()};
+        auto time{Time::GetLocalTime()};
 
         std::wstring out{L"00:00:00|00.00| "};
         WORD t[]{
@@ -36,25 +36,25 @@ namespace Writer
         return out;
     };
 
-    template <eType T>
+    template <Type T>
     constexpr std::wstring_view prefix()
     {
-#define TCASE(in, out) \
-    case in:           \
+#define CASE(in, out) \
+    case in:          \
         return out
         switch (T)
         {
-            TCASE(eType::None, L"None     |");
-            TCASE(eType::Log, L"Log      |");
-            TCASE(eType::Warning, L"Warning  |");
-            TCASE(eType::Error, L"Error    |");
+            CASE(Type::None, L"None     |");
+            CASE(Type::Log, L"Log      |");
+            CASE(Type::Warning, L"Warning  |");
+            CASE(Type::Error, L"Error    |");
         default:
             return L"          ";
         }
-#undef TCASE
+#undef CASE
     };
 
-    template <eType MT, eOut O>
+    template <Type MT, Out O>
     struct Message
     {
         template <typename... Args>
@@ -64,13 +64,11 @@ namespace Writer
 
             std::wstringstream output{Accumulate(prefix<MT>(), GetSysTime(), args...)};
 
-            if constexpr (O == eOut::Console)
+            if constexpr (O == Out::Console && GUI_ONLY(false) CONSOLE_ONLY(true))
             {
-                GUI_ONLY(static_assert(0));
-
                 cOut(output.view());
             }
-            else if constexpr (O == eOut::File)
+            else if constexpr (O == Out::File)
             {
                 HFile file{HFile::CreateFile(L"Log.txt")};
                 file.Write(output.view());

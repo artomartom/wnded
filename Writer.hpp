@@ -4,13 +4,13 @@
 
 namespace Writer
 {
-    enum eOut : uint32_t
+    enum Out : uint32_t
     {
         None = 0,
         Console = 1,
         File = (Console + 1),
     };
-    enum class eType : uint32_t
+    enum class Type : uint32_t
     {
         None = 0,
         Log = 1,
@@ -28,19 +28,19 @@ namespace Writer
 
     inline std::wstring GetSysTime();
 
-    template <eType T>
+    template <Type T>
     constexpr std::wstring_view prefix();
 
-    template <eType T, eOut O>
+    template <Type T, Out O>
     struct Message;
 
-    template <eOut OT>
-    using Log = Message<eType::Log, OT>;
+    template <Out OT>
+    using Log = Message<Type::Log, OT>;
 
-    template <eOut OT>
-    using Warning = Message<eType::Warning, OT>;
+    template <Out OT>
+    using Warning = Message<Type::Warning, OT>;
 
-    template <eOut OT>
-    using Error = Message<eType::Error, OT>;
+    template <Out OT>
+    using Error = Message<Type::Error, OT>;
 };
 #endif

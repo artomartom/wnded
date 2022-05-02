@@ -19,8 +19,8 @@ using Wrapper::HFile;
 using Writer::Error;
 using Writer::Log;
 using Writer::Warning;
-using Writer::eOut::Console;
-using Writer::eOut::File;
+using Writer::Out::Console;
+using Writer::Out::File;
 
 // impl
 #include "Wrapper.inl"

@@ -1,13 +1,13 @@
 #ifndef TIMER_HPP
 #define TIMER_HPP
 
-namespace Timer
+namespace Time 
 {
 
   SYSTEMTIME GetLocalTime() noexcept;
   long long QueryPerformanceFrequency() noexcept;
 
-  class CTimer;
+  class  Timer;
 
 }
 #endif
