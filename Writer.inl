@@ -57,24 +57,28 @@ namespace Writer
     template <Type MT, Out O>
     struct Message
     {
+    };
+
+    template <Type MT>
+    struct Message<MT, Out::Console>
+    {
         template <typename... Args>
         constexpr static void Write(Args const &...args)
         {
-            using Wrapper::HFile;
-
-            std::wstringstream output{Accumulate(prefix<MT>(), GetSysTime(), args...)};
-
-            if constexpr (O == Out::Console && GUI_ONLY(false) CONSOLE_ONLY(true))
-            {
-                cOut(output.view());
-            }
-            else if constexpr (O == Out::File)
-            {
-                HFile file{HFile::CreateFile(L"Log.txt")};
-                file.Write(output.view());
-                file.Write(L"\n");
-            };
+            cOut(Accumulate(prefix<MT>(), GetSysTime(), args...).view());
         };
     };
+    template <Type MT>
+    struct Message<MT, Out::File>
+    {
+        template <typename... Args>
+        constexpr static void Write(Args const &...args)
+        {
+            Wrapper::HFile file{Wrapper::HFile::CreateFile(L"Log.txt")};
+            file.Write(Accumulate(prefix<MT>(), GetSysTime(), args...).view());
+            file.Write(L"\n");
+        };
+    };
+
 };
 #endif
