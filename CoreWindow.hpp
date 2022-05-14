@@ -2,6 +2,8 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 #define RECTWIDTH(x) (x.right - x.left)
 #define RECTHEIGHT(x) (x.bottom - x.top)
 
@@ -11,20 +13,19 @@ namespace Window
 #pragma region EventArgs
   struct CreationArgs
   {
-
     /*args*/
     void *pCoreWindow{};
-    ::HINSTANCE m_hInst{};
-    ::RECT m_Rect{};
+    ::HINSTANCE hInst{};
+    ::RECT Rect{};
   };
 
   struct SizeChangedArgs
   {
 
     SizeChangedArgs(::WPARAM wParam, ::LPARAM lParam)
-        : m_Type{static_cast<Type>(wParam)}, m_New{LOWORD(lParam), HIWORD(lParam)} {};
+        : Type{static_cast<enum class Type>(wParam)}, New{LOWORD(lParam), HIWORD(lParam)} {};
     /*args*/
-    enum Type : ::WPARAM
+    enum class Type : ::WPARAM
     {
       MaxHide = SIZE_MAXHIDE,     // Message is sent to all pop-up windows when some other window is maximized.
       Maximized = SIZE_MAXIMIZED, // The window has been maximized.
@@ -32,8 +33,8 @@ namespace Window
       Minimized = SIZE_MINIMIZED, // The window has been minimized.
       Restored = SIZE_RESTORED,   // The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
 
-    } m_Type{};
-    ::SIZE m_New{};
+    } Type{};
+    ::SIZE New{};
   };
 
   struct AppEventArgs
@@ -44,6 +45,83 @@ namespace Window
     ::LPARAM lParam{};
     ::ULONG message{};
   };
+
+  struct CursorArgs
+  {
+    CursorArgs() = delete;
+    enum class Event : UINT;
+    CursorArgs(Event event, ::WPARAM wParam, ::LPARAM lParam)
+        : Event{event},
+          Misc{static_cast<enum class Misc>(wParam)},
+          pos{GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)} {};
+
+    enum class Event : UINT
+    {
+      None = (0u),
+      Move = (1u << 0),
+      // action
+      Up = (1u << 2),
+      Down = (1u << 3),
+      DoubleClick = (1u << 4),
+      // button
+      Left = (1u << 5),
+      Middle = (1u << 6),
+      Right = (1u << 7),
+      // Left
+      LUp = (Left | Up),
+      LDown = (Left | Down),
+      LDoubClick = (Left | DoubleClick),
+      // Middle
+      MUp = (Middle | Up),
+      MDown = (Middle | Down),
+      MDoubClick = (Middle | DoubleClick),
+      // Right
+      RUp = (Right | Up),
+      RDown = (Right | Down),
+      RDoubClick = (Right | DoubleClick),
+
+    } Event{};
+    enum class Misc : ::WPARAM
+    {
+      //... during primary event
+      None = 0,
+      CtrlDown = MK_CONTROL, // The CTRL key is down.
+      LBDown = MK_LBUTTON,   // The left Cursor button is down.
+      MBDown = MK_MBUTTON,   // The middle Cursor button is down.
+      RBDown = MK_RBUTTON,   // The right Cursor button is down.
+      ShiftDown = MK_SHIFT,  // The SHIFT key is down.
+      X1Down = MK_XBUTTON1,  // The first X button is down.
+      X2Down = MK_XBUTTON2,  // The second X button is down.
+    } Misc{};
+    ::POINT pos{};
+  };
+
+  template <typename T>
+  T operator&(T &left, T &right)
+  {
+    using UT = std::underlying_type<T>::type;
+    return static_cast<T>(static_cast<UT>(left) & static_cast<UT>(right));
+  };
+  template <typename T>
+  T operator|(T &left, T &right)
+  {
+    using UT = std::underlying_type<T>::type;
+    return static_cast<T>(static_cast<UT>(left) | static_cast<UT>(right));
+  };
+
+  template <typename T>
+  auto operator!=(T &left, T &right)
+  {
+    using UT = std::underlying_type<T>::type;
+    return (static_cast<UT>(left) != static_cast<UT>(right));
+  };
+  template <typename T>
+  bool operator==(T &left, T &right)
+  {
+    using UT = std::underlying_type<T>::type;
+    return (static_cast<UT>(left) == static_cast<UT>(right));
+  };
+
   struct CommandArgs
   {
     CommandArgs(::WPARAM wParam, ::LPARAM lParam)
@@ -55,23 +133,23 @@ namespace Window
   struct KeyEventArgs
   {
     KeyEventArgs(::WPARAM wParam)
-        : m_VirtualKey{wParam} {};
-    ::WPARAM m_VirtualKey{}; // Key Code   ...
+        : VirtualKey{wParam} {};
+    ::WPARAM VirtualKey{}; // Key Code   ...
   };
 
   struct ActivateArgs
   {
     ActivateArgs(WPARAM wParam)
-        : m_Activate{LOWORD(wParam)},
-          m_IsMinimized{static_cast<bool>(HIWORD(wParam))} {};
+        : Activate{LOWORD(wParam)},
+          IsMinimized{static_cast<bool>(HIWORD(wParam))} {};
     /*args*/
-    enum Activate : ::WORD
+    enum class Activate : ::WORD
     {
-      Activated = WA_ACTIVE,           // Activated by some method other than a mouse click (  by a call to the SetActiveWindow function or by use of the keyboard interface to select the window).
-      ClickActivated = WA_CLICKACTIVE, // Activated by a mouse click.
+      Activated = WA_ACTIVE,           // Activated by some method other than a Cursor click (  by a call to the SetActiveWindow function or by use of the keyboard interface to select the window).
+      ClickActivated = WA_CLICKACTIVE, // Activated by a Cursor click.
       Deactivated = WA_INACTIVE,       // Deactivated.
-    } m_Activate{};
-    bool m_IsMinimized{};
+    } Activate{};
+    bool IsMinimized{};
   };
 
 #pragma endregion // EventArgs
@@ -156,10 +234,25 @@ namespace Window
         PROCCASE(WM_ENTERSIZEMOVE, false, { ::Sleep(30); });
         PROCCASE(WM_EXITSIZEMOVE, false, { ::Sleep(30); });
 
-        /*user input*/
-        PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
-        PROCCASE(WM_MOUSEMOVE, false, s_pthis->OnCursorMove());
+#pragma region user_input
+        PROCCASE(WM_MOUSEMOVE, false, s_pthis->OnCursorMove(CursorArgs{CursorArgs::Event::Move, wParam, lParam}));
+        // left button
+        PROCCASE(WM_LBUTTONUP, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LUp, wParam, lParam)));
+        PROCCASE(WM_LBUTTONDOWN, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LDown, wParam, lParam)));
+        PROCCASE(WM_LBUTTONDBLCLK, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LDoubClick, wParam, lParam)));
+        // middle button
+        PROCCASE(WM_MBUTTONUP, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MUp, wParam, lParam)));
+        PROCCASE(WM_MBUTTONDOWN, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MDown, wParam, lParam)));
+        PROCCASE(WM_MBUTTONDBLCLK, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MDoubClick, wParam, lParam)));
+        // right button
+        PROCCASE(WM_RBUTTONUP, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RUp, wParam, lParam)));
+        PROCCASE(WM_RBUTTONDOWN, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RDown, wParam, lParam)));
+        PROCCASE(WM_RBUTTONDBLCLK, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RDoubClick, wParam, lParam)));
+        // keyboard
         PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1LL << 31))) ? s_pthis->OnKeyStroke({wParam}) : s_pthis->OnKeyHold({wParam}); });
+        // misc
+        PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
+#pragma region end // user_input
       };
 
       if (message > WM_APP)
@@ -197,20 +290,21 @@ class CoreApp
 public:
   /**
    * Event proc message handlers
-   *
    */
   void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnPaint() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
   void OnClose() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
   void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
-  void OnCursorMove() noexcept {/*UNREFERENCED_PARAMETER(args);*/};
+  void OnCursorMove(_In_ const ::Window::CursorArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
+  void OnCursorEvent(_In_ const ::Window::CursorArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnSizing(_Inout_updates_opt_(1) RECT *pRect) noexcept { UNREFERENCED_PARAMETER(pRect); };
   void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
 
+  // implementation calls this function to close itself
   void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
 
   bool IsValid() noexcept { return m_Handle != 0; };

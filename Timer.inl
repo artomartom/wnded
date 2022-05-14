@@ -90,16 +90,12 @@ namespace Time
     Timer(Timer &&) = default;
     Timer &operator=(Timer &&) = default;
     // warning C5027: 'Timer::Timer': move assignment operator was implicitly defined as deleted
+
     template <typename T>
     T GetDelta() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
 
-    // get time  since last call to either
     template <typename T>
-    T CountDelta() noexcept
-    {
-      Count();
-      return static_cast<T>(Intrnl_Time.m_Delta);
-    };
+    T GetCount() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
 
     // gets time since object creation,  if  paused gets time when was pause
     template <typename T>
