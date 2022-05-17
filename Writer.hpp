@@ -4,7 +4,7 @@
 
 namespace Writer
 {
-    enum Out : uint32_t
+    enum class Out : uint32_t
     {
         None = 0,
         Console = 1,
@@ -18,13 +18,6 @@ namespace Writer
         Error = (Warning + 1),
 
     };
-
-    inline void fOut(std::wstring_view text);
-
-    inline void cOut(std::wstring_view text);
-
-    template <typename... Args>
-    constexpr std::wstringstream Accumulate(Args const &...args);
 
     inline std::wstring GetSysTime();
 

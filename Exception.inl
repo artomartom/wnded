@@ -56,8 +56,8 @@ namespace Exception
             output << L"(TRANSLATION FAILED)\n";
         };
 
-        CONSOLE_ONLY(::Writer::Error<Writer::Console>::Write(output.str()));
-        GUI_ONLY(::Writer::Error<Writer::File>::Write(output.str()));
+        CONSOLE_ONLY(Error<Console>::Write(output.str()));
+        GUI_ONLY(Error<File>::Write(output.str()));
     };
 
     // Get exception record and delegate  exception to handler
@@ -150,8 +150,8 @@ namespace Exception
         output
             << Note;
 
-        CONSOLE_ONLY(::Writer::Error<Writer::Console>::Write(output.str()));
-        GUI_ONLY(::Writer::Error<Writer::File>::Write(output.str()));
+        CONSOLE_ONLY(Error<Console>::Write(output.str()));
+        GUI_ONLY(Error<File>::Write(output.str()));
 
         return ErrorCode;
     };

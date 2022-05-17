@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <assert.h>
 #include <compare>
+#include <mutex>
 
 // decl
 #include "Wrapper.hpp"

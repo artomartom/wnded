@@ -5,12 +5,6 @@
 namespace Writer
 {
 
-    inline void cOut(std::wstring_view text)
-    {
-
-        std::wcout << text << L'\n';
-    };
-
     template <typename... Args>
     constexpr std::wstringstream Accumulate(Args const &...args)
     {
@@ -39,44 +33,62 @@ namespace Writer
     template <Type T>
     constexpr std::wstring_view prefix()
     {
-#define CASE(in, out) \
-    case in:          \
-        return out
         switch (T)
         {
-            CASE(Type::None, L"None     |");
-            CASE(Type::Log, L"Log      |");
-            CASE(Type::Warning, L"Warning  |");
-            CASE(Type::Error, L"Error    |");
+        case Type::None:
+            return L"None     |";
+        case Type::Log:
+            return L"Log      |";
+        case Type::Warning:
+            return L"Warning  |";
+        case Type::Error:
+            return L"Error    |";
         default:
             return L"          ";
         }
-#undef CASE
     };
 
     template <Type MT, Out O>
     struct Message
     {
     };
-
-    template <Type MT>
-    struct Message<MT, Out::Console>
+    template <typename T>
+    struct AddSpace
     {
-        template <typename... Args>
-        constexpr static void Write(Args const &...args)
+        AddSpace(const T &ref) : ref{ref} {};
+        friend std::wostream &operator<<(std::wostream &os, const AddSpace &that)
         {
-            cOut(Accumulate(prefix<MT>(), GetSysTime(), args...).view());
+            return os << L' ' << that.ref;
+        }
+
+    private:
+        const T &ref{};
+    };
+    template <Type MT>
+    struct Message<MT, Console>
+    {
+        template <typename Arg, typename... Args>
+        constexpr static void Write(const Arg arg, const Args... args)
+        {
+            static std::mutex m{};
+            std::wstringstream ss{};
+            (((ss << prefix<MT>() << GetSysTime()) << arg) << ... << AddSpace(args)) << L'\n';
+            std::lock_guard<std::mutex> lockGuard{m};
+            std::wcout << ss.str().c_str();
         };
     };
     template <Type MT>
-    struct Message<MT, Out::File>
+    struct Message<MT, File>
     {
-        template <typename... Args>
-        constexpr static void Write(Args const &...args)
+        template <typename Arg, typename... Args>
+        constexpr static void Write(const Arg arg, const Args... args)
         {
+            static std::mutex m{};
+            std::wstringstream ss{};
+            (((ss << prefix<MT>() << GetSysTime()) << arg) << ... << AddSpace(args)) << L'\n';
+            std::lock_guard<std::mutex> lockGuard{m};
             Wrapper::File file{Wrapper::File::CreateFile(L"Log.txt")};
-            file.Write(Accumulate(prefix<MT>(), GetSysTime(), args...).view());
-            file.Write(L"\n");
+            file.Write(ss.view());
         };
     };
 
