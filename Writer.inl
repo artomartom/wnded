@@ -74,7 +74,7 @@ namespace Writer
         template <typename... Args>
         constexpr static void Write(Args const &...args)
         {
-            Wrapper::HFile file{Wrapper::HFile::CreateFile(L"Log.txt")};
+            Wrapper::File file{Wrapper::File::CreateFile(L"Log.txt")};
             file.Write(Accumulate(prefix<MT>(), GetSysTime(), args...).view());
             file.Write(L"\n");
         };

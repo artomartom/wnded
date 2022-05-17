@@ -95,7 +95,7 @@ namespace Window
     } Misc{};
     ::POINT pos{};
   };
-
+  // comparison for  enum classes
   template <typename T>
   T operator&(T &left, T &right)
   {
@@ -213,6 +213,11 @@ namespace Window
         /*window status */
         PROCCASE(WM_CREATE, false,
                  {
+                   /**s_pthis is initialized only once, on creation of the window,
+                    * is this scenario we can't have more than one window using this Proc function at once,
+                    * in cast of sharing proc between multiple windows we would use setwindowlongptr to store and  getwindowlontptr to retrive
+                    * pointer to TImpl class object in each call to proc
+                    */
                    CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
                    s_pthis = reinterpret_cast<CoreWindow *>(args->pCoreWindow);
                    s_pthis->m_Handle = hWnd;
