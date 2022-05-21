@@ -150,8 +150,9 @@ namespace Exception
         output
             << Note;
 
-        CONSOLE_ONLY(Error<Console>::Write(output.str()));
-        GUI_ONLY(Error<File>::Write(output.str()));
+        // constexpr auto Out{};
+
+        Error<Writer::IsConsoleAvailable() ? Writer::Out::Console : Writer::Out::File>::Write(output.str());
 
         return ErrorCode;
     };

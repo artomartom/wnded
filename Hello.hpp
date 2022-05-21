@@ -15,13 +15,12 @@
 #include "Exception.hpp"
 #include "Timer.hpp"
 
-using Exception::Invoke;
-using Wrapper::HFile;
-using Writer::Error;
-using Writer::Log;
-using Writer::Warning;
-using Writer::Out::Console;
-using Writer::Out::File;
+using ::Exception::Invoke;
+using ::Writer::Error;
+using ::Writer::Log;
+using ::Writer::Warning;
+using ::Writer::Out::Console;
+using ::Writer::Out::File;
 
 // impl
 #include "Wrapper.inl"

@@ -5,9 +5,7 @@
 namespace Wrapper
 {
 
-    class HFile;
-
-    
+    class  File;
 
 };
 #endif

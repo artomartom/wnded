@@ -4,6 +4,20 @@
 
 namespace Writer
 {
+    constexpr bool IsConsoleAvailable()
+    {
+#if (!defined(CONSOLE)) && (defined(GUI))
+#define GUI_ONLY(expr) expr
+#define CONSOLE_ONLY(expr)
+
+        return false;
+#else
+#define GUI_ONLY(expr)
+#define CONSOLE_ONLY(expr) expr
+        return true;
+#endif
+    };
+
     enum class Out : uint32_t
     {
         None = 0,

@@ -1,14 +1,6 @@
 #ifndef EXCEPTION_HPP
 #define EXCEPTION_HPP
 
-#if (!defined(CONSOLE)) && (defined(GUI))
-#define GUI_ONLY(expr) expr
-#define CONSOLE_ONLY(expr)
-#else
-#define GUI_ONLY(expr)
-#define CONSOLE_ONLY(expr) expr
-#endif // (!defined(CONSOLE)) && (defined(GUI))
-
 #define Beep (MessageBeep(5))
 
 #if defined(_DEBUG) || defined(PROFILE)
