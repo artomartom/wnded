@@ -16,7 +16,7 @@ namespace Window
     /*args*/
     void *pCoreWindow{};
     ::HINSTANCE hInst{};
-    ::RECT Rect{};
+    ::RECT rect{};
   };
 
   struct SizeChangedArgs
