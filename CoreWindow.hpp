@@ -23,9 +23,9 @@ namespace Window
   {
 
     SizeChangedArgs(::WPARAM wParam, ::LPARAM lParam)
-        : Type{static_cast<enum class Type>(wParam)}, New{LOWORD(lParam), HIWORD(lParam)} {};
+        : changeType{static_cast<enum class ChangeType>(wParam)}, newSize{LOWORD(lParam), HIWORD(lParam)} {};
     /*args*/
-    enum class Type : ::WPARAM
+    enum class ChangeType : ::WPARAM
     {
       MaxHide = SIZE_MAXHIDE,     // Message is sent to all pop-up windows when some other window is maximized.
       Maximized = SIZE_MAXIMIZED, // The window has been maximized.
@@ -33,8 +33,12 @@ namespace Window
       Minimized = SIZE_MINIMIZED, // The window has been minimized.
       Restored = SIZE_RESTORED,   // The window has been resized, but neither the SIZE_MINIMIZED nor SIZE_MAXIMIZED value applies.
 
-    } Type{};
-    ::SIZE New{};
+    } changeType{};
+
+    struct Size
+    {
+      long width, height;
+    } newSize{};
   };
 
   struct AppEventArgs
@@ -51,8 +55,8 @@ namespace Window
     CursorArgs() = delete;
     enum class Event : UINT;
     CursorArgs(Event event, ::WPARAM wParam, ::LPARAM lParam)
-        : Event{event},
-          Misc{static_cast<enum class Misc>(wParam)},
+        : event{event},
+          misc{static_cast<enum class Misc>(wParam)},
           pos{GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)} {};
 
     enum class Event : UINT
@@ -80,7 +84,7 @@ namespace Window
       RDown = (Right | Down),
       RDoubClick = (Right | DoubleClick),
 
-    } Event{};
+    } event{};
     enum class Misc : ::WPARAM
     {
       //... during primary event
@@ -92,7 +96,7 @@ namespace Window
       ShiftDown = MK_SHIFT,  // The SHIFT key is down.
       X1Down = MK_XBUTTON1,  // The first X button is down.
       X2Down = MK_XBUTTON2,  // The second X button is down.
-    } Misc{};
+    } misc{};
     ::POINT pos{};
   };
   // comparison for  enum classes
@@ -133,23 +137,23 @@ namespace Window
   struct KeyEventArgs
   {
     KeyEventArgs(::WPARAM wParam)
-        : VirtualKey{wParam} {};
-    ::WPARAM VirtualKey{}; // Key Code   ...
+        : virtualKey{wParam} {};
+    ::WPARAM virtualKey{}; // Key Code   ...
   };
 
   struct ActivateArgs
   {
     ActivateArgs(WPARAM wParam)
-        : Activate{LOWORD(wParam)},
-          IsMinimized{static_cast<bool>(HIWORD(wParam))} {};
+        : activateType{LOWORD(wParam)},
+          isMinimized{static_cast<bool>(HIWORD(wParam))} {};
     /*args*/
-    enum class Activate : ::WORD
+    enum class ActivateType : ::WORD
     {
       Activated = WA_ACTIVE,           // Activated by some method other than a Cursor click (  by a call to the SetActiveWindow function or by use of the keyboard interface to select the window).
       ClickActivated = WA_CLICKACTIVE, // Activated by a Cursor click.
       Deactivated = WA_INACTIVE,       // Deactivated.
-    } Activate{};
-    bool IsMinimized{};
+    } activateType{};
+    bool isMinimized{};
   };
 
 #pragma endregion // EventArgs
@@ -167,7 +171,7 @@ namespace Window
     ~CoreWindow()
     {
       TImpl::OnClose();
-      ::DestroyWindow(TImpl::m_Handle);
+      ::DestroyWindow(TImpl::m_handle);
     };
 
     CoreWindow(HINSTANCE hinst, const RECT rect)
@@ -182,13 +186,13 @@ namespace Window
       ::RegisterClassExW(&wincl);
 
       RECT MainRect{rect};
-      ::AdjustWindowRectEx(&MainRect, TImpl::m_Stile, 0, TImpl::m_StileEx);
+      ::AdjustWindowRectEx(&MainRect, TImpl::m_style, 0, TImpl::m_styleEx);
 
       CreationArgs CreateArgs{this, hinst, rect};
       ::CreateWindowExW(
-          TImpl::m_StileEx,
+          TImpl::m_styleEx,
           wincl.lpszClassName, 0,
-          TImpl::m_Stile,
+          TImpl::m_style,
           MainRect.left, MainRect.top,
           RECTWIDTH(MainRect),
           RECTHEIGHT(MainRect),
@@ -220,7 +224,7 @@ namespace Window
                     */
                    CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
                    s_pthis = reinterpret_cast<CoreWindow *>(args->pCoreWindow);
-                   s_pthis->m_Handle = hWnd;
+                   s_pthis->m_handle = hWnd;
                    s_pthis->TImpl::OnCreate(*args);
                    ::ShowWindow(hWnd, SW_NORMAL);
                  });
@@ -277,13 +281,13 @@ namespace Window
   template <class CoreWindowSpec>
   int __stdcall Run(const CoreWindowSpec &window)
   {
-    ::MSG m_messages{};
+    ::MSG messages{};
 
-    while (::GetMessageW(&m_messages, 0, 0, 0))
+    while (::GetMessageW(&messages, 0, 0, 0))
     {
 
-      ::TranslateMessage(&m_messages);
-      ::DispatchMessageW(&m_messages);
+      ::TranslateMessage(&messages);
+      ::DispatchMessageW(&messages);
     };
 
     return 0;
@@ -310,16 +314,16 @@ public:
   void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
 
   // implementation calls this function to close itself
-  void Close() noexcept { ::SendMessageW(m_Handle, WM_CLOSE, 0, 0); };
+  void Close() noexcept { ::SendMessageW(m_handle, WM_CLOSE, 0, 0); };
 
-  bool IsValid() noexcept { return m_Handle != 0; };
-  void SetHeader(const char *text) const noexcept { ::SetWindowTextA(m_Handle, text); };
+  bool IsValid() noexcept { return m_handle != 0; };
+  void SetHeader(const char *text) const noexcept { ::SetWindowTextA(m_handle, text); };
 
 protected:
-  HWND m_Handle{nullptr};
-  bool m_IsVisible{};
-  DWORD m_StileEx{WS_EX_OVERLAPPEDWINDOW   };
-  DWORD m_Stile{WS_OVERLAPPED |
+  HWND m_handle{nullptr};
+  bool m_isVisible{};
+  DWORD m_styleEx{WS_EX_OVERLAPPEDWINDOW};
+  DWORD m_style{WS_OVERLAPPED |
                 WS_CAPTION |
                 WS_SYSMENU |
                 WS_MINIMIZEBOX |
