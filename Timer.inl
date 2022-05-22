@@ -67,10 +67,7 @@ namespace Time
      */
     void Switch() noexcept
     {
-      if (m_PausedAt)
-        Unpause();
-      else
-        Pause();
+      (m_PausedAt) ? Unpause() : Pause();
     };
 
     void Reset() noexcept
@@ -92,18 +89,11 @@ namespace Time
     // warning C5027: 'Timer::Timer': move assignment operator was implicitly defined as deleted
 
     template <typename T>
-    T GetDelta() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
-
-    template <typename T>
-    T GetCount() noexcept { return static_cast<T>(Intrnl_Time.m_Delta); };
+    T GetDelta() noexcept { return m_PausedAt ? static_cast<T>(0) : static_cast<T>(Intrnl_Time.m_Delta); };
 
     // gets time since object creation,  if  paused gets time when was pause
     template <typename T>
-    T Count() noexcept
-    {
-      Count();
-      return m_PausedAt ? static_cast<T>(m_PausedAt) : Intrnl_Time.m_SinceStart;
-    };
+    T GetCount() noexcept { return m_PausedAt ? static_cast<T>(0) : static_cast<T>(Intrnl_Time.m_SinceStart); };
 
   protected:
   private:
