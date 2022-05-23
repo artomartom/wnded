@@ -181,7 +181,7 @@ namespace Window
           sizeof(WNDCLASSEXW),
           CS_GLOBALCLASS | CS_PARENTDC,
           CoreProcedure,
-          0, 0, 0, 0, ::LoadCursorA(0, IDC_ARROW), 0, 0,
+          0, 0, GetModuleHandle(NULL), 0, ::LoadCursorA(0, IDC_ARROW), 0, 0,
           L"TheWindowName", 0};
       ::RegisterClassExW(&wincl);
 
@@ -211,7 +211,6 @@ namespace Window
     return boolreturn
 
       static CoreWindow *s_pthis{};
-
       switch (message)
       {
         /*window status */
@@ -226,7 +225,8 @@ namespace Window
                    s_pthis = reinterpret_cast<CoreWindow *>(args->pCoreWindow);
                    s_pthis->m_handle = hWnd;
                    s_pthis->TImpl::OnCreate(*args);
-                   ::ShowWindow(hWnd, SW_NORMAL);
+                   ::ShowWindow(hWnd, SW_SHOWDEFAULT);
+                   ::UpdateWindow(hWnd);
                  });
         PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
         PROCCASE(WM_CLOSE, false, { ::PostQuitMessage(0); });
@@ -317,7 +317,6 @@ public:
   void Close() noexcept { ::SendMessageW(m_handle, WM_CLOSE, 0, 0); };
 
   bool IsValid() noexcept { return m_handle != 0; };
-  void SetHeader(const char *text) const noexcept { ::SetWindowTextA(m_handle, text); };
 
 protected:
   HWND m_handle{nullptr};
