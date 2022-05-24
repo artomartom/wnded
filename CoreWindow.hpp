@@ -14,7 +14,6 @@ namespace Window
   struct CreationArgs
   {
     /*args*/
-    void *pCoreWindow{};
     ::HINSTANCE hInst{};
     ::RECT rect{};
   };
@@ -173,7 +172,11 @@ namespace Window
       TImpl::OnClose();
       ::DestroyWindow(TImpl::m_handle);
     };
-
+    struct packedCreateArgs_t
+    {
+      CoreWindow<TImpl> *pthis{};
+      CreationArgs args{};
+    };
     CoreWindow(HINSTANCE hinst, const RECT rect)
     {
 
@@ -182,13 +185,14 @@ namespace Window
           CS_GLOBALCLASS | CS_PARENTDC,
           CoreProcedure,
           0, 0, GetModuleHandle(NULL), 0, ::LoadCursorA(0, IDC_ARROW), 0, 0,
-          L"TheWindowName", 0};
+          L"CoreWindow", 0};
       ::RegisterClassExW(&wincl);
 
       RECT MainRect{rect};
       ::AdjustWindowRectEx(&MainRect, TImpl::m_style, 0, TImpl::m_styleEx);
 
-      CreationArgs CreateArgs{this, hinst, rect};
+      packedCreateArgs_t createArgsTpl{this, CreationArgs{hinst, rect}};
+
       ::CreateWindowExW(
           TImpl::m_styleEx,
           wincl.lpszClassName, 0,
@@ -196,7 +200,7 @@ namespace Window
           MainRect.left, MainRect.top,
           RECTWIDTH(MainRect),
           RECTHEIGHT(MainRect),
-          HWND_DESKTOP, nullptr, nullptr, &CreateArgs);
+          HWND_DESKTOP, nullptr, nullptr, &createArgsTpl);
     };
 
   private:
@@ -205,68 +209,66 @@ namespace Window
 
     inline static ::LRESULT __stdcall CoreProcedure(::HWND hWnd, ::UINT message, ::WPARAM wParam, ::LPARAM lParam)
     {
+
 #define PROCCASE(message, boolreturn, action) \
   case message:                               \
     action;                                   \
     return boolreturn
 
-      static CoreWindow *s_pthis{};
+      CoreWindow *pthis{(CoreWindow *)::GetWindowLongPtrW(hWnd, -21)}; // GWL_USERDATA
       switch (message)
       {
         /*window status */
         PROCCASE(WM_CREATE, false,
                  {
-                   /**s_pthis is initialized only once, on creation of the window,
-                    * is this scenario we can't have more than one window using this Proc function at once,
-                    * in cast of sharing proc between multiple windows we would use setwindowlongptr to store and  getwindowlontptr to retrive
-                    * pointer to TImpl class object in each call to proc
-                    */
-                   CreationArgs *args = reinterpret_cast<CreationArgs *>((reinterpret_cast<::CREATESTRUCT *>(lParam))->lpCreateParams);
-                   s_pthis = reinterpret_cast<CoreWindow *>(args->pCoreWindow);
-                   s_pthis->m_handle = hWnd;
-                   s_pthis->TImpl::OnCreate(*args);
+                   CREATESTRUCT *createStruct{(reinterpret_cast<::CREATESTRUCT *>(lParam))};
+                   auto *tupl{reinterpret_cast<packedCreateArgs_t *>(createStruct->lpCreateParams)};
+                   pthis = tupl->pthis; // needed to call OnCreate
+                   pthis->TImpl::m_handle = hWnd;
+                   ::SetWindowLongPtrW(pthis->TImpl::m_handle, -21, (LONG_PTR)pthis); // GWL_USERDATA
+                   pthis->TImpl::OnCreate(tupl->args);
                    ::ShowWindow(hWnd, SW_SHOWDEFAULT);
                    ::UpdateWindow(hWnd);
                  });
-        PROCCASE(WM_ACTIVATE, false, { s_pthis->TImpl::OnWindowActivate({wParam}); });
+        PROCCASE(WM_ACTIVATE, false, { pthis->TImpl::OnWindowActivate({wParam}); });
         PROCCASE(WM_CLOSE, false, { ::PostQuitMessage(0); });
         /*visual*/
         PROCCASE(WM_ERASEBKGND, true, {});
         PROCCASE(WM_PAINT, false,
                  {
                    ::ValidateRect(hWnd, 0);
-                   s_pthis->TImpl::OnPaint();
+                   pthis->TImpl::OnPaint();
                  };);
         /*window size*/
-        PROCCASE(WM_SIZE, false, s_pthis->TImpl::OnSizeChanged({wParam, lParam}));
-        PROCCASE(WM_SIZING, true, s_pthis->TImpl::OnSizing(reinterpret_cast<RECT *>(lParam)));
+        PROCCASE(WM_SIZE, false, pthis->TImpl::OnSizeChanged({wParam, lParam}));
+        PROCCASE(WM_SIZING, true, pthis->TImpl::OnSizing(reinterpret_cast<RECT *>(lParam)));
         PROCCASE(WM_ENTERSIZEMOVE, false, { ::Sleep(30); });
         PROCCASE(WM_EXITSIZEMOVE, false, { ::Sleep(30); });
 
 #pragma region user_input
-        PROCCASE(WM_MOUSEMOVE, false, s_pthis->OnCursorMove(CursorArgs{CursorArgs::Event::Move, wParam, lParam}));
+        PROCCASE(WM_MOUSEMOVE, false, pthis->OnCursorMove(CursorArgs{CursorArgs::Event::Move, wParam, lParam}));
         // left button
-        PROCCASE(WM_LBUTTONUP, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LUp, wParam, lParam)));
-        PROCCASE(WM_LBUTTONDOWN, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LDown, wParam, lParam)));
-        PROCCASE(WM_LBUTTONDBLCLK, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LDoubClick, wParam, lParam)));
+        PROCCASE(WM_LBUTTONUP, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LUp, wParam, lParam)));
+        PROCCASE(WM_LBUTTONDOWN, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LDown, wParam, lParam)));
+        PROCCASE(WM_LBUTTONDBLCLK, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::LDoubClick, wParam, lParam)));
         // middle button
-        PROCCASE(WM_MBUTTONUP, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MUp, wParam, lParam)));
-        PROCCASE(WM_MBUTTONDOWN, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MDown, wParam, lParam)));
-        PROCCASE(WM_MBUTTONDBLCLK, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MDoubClick, wParam, lParam)));
+        PROCCASE(WM_MBUTTONUP, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MUp, wParam, lParam)));
+        PROCCASE(WM_MBUTTONDOWN, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MDown, wParam, lParam)));
+        PROCCASE(WM_MBUTTONDBLCLK, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::MDoubClick, wParam, lParam)));
         // right button
-        PROCCASE(WM_RBUTTONUP, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RUp, wParam, lParam)));
-        PROCCASE(WM_RBUTTONDOWN, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RDown, wParam, lParam)));
-        PROCCASE(WM_RBUTTONDBLCLK, false, s_pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RDoubClick, wParam, lParam)));
+        PROCCASE(WM_RBUTTONUP, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RUp, wParam, lParam)));
+        PROCCASE(WM_RBUTTONDOWN, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RDown, wParam, lParam)));
+        PROCCASE(WM_RBUTTONDBLCLK, false, pthis->OnCursorEvent(CursorArgs(CursorArgs::Event::RDoubClick, wParam, lParam)));
         // keyboard
-        PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1LL << 31))) ? s_pthis->OnKeyStroke({wParam}) : s_pthis->OnKeyHold({wParam}); });
+        PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1LL << 31))) ? pthis->OnKeyStroke({wParam}) : pthis->OnKeyHold({wParam}); });
         // misc
-        PROCCASE(WM_COMMAND, false, { s_pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
+        PROCCASE(WM_COMMAND, false, { pthis->TImpl::OnCommand(CommandArgs(wParam, lParam)); });
 #pragma region end // user_input
       };
 
       if (message > WM_APP)
       {
-        s_pthis->TImpl::OnAppEvent(AppEventArgs(message, wParam, lParam));
+        pthis->TImpl::OnAppEvent(AppEventArgs(message, wParam, lParam));
         return 0;
       }
       else

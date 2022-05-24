@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <compare>
 #include <mutex>
-
+#include <tuple>
 // decl
 #include "Wrapper.hpp"
 #include "Writer.hpp"
