@@ -171,6 +171,7 @@ namespace Window
     {
       TImpl::OnClose();
       ::DestroyWindow(TImpl::m_handle);
+      TImpl::m_handle=nullptr;
     };
     struct packedCreateArgs_t
     {
@@ -315,10 +316,10 @@ public:
   void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
   void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept { UNREFERENCED_PARAMETER(args); };
 
-  // implementation calls this function to close itself
+  // implementation calls this function to programmatically close itself
   void Close() noexcept { ::SendMessageW(m_handle, WM_CLOSE, 0, 0); };
 
-  bool IsValid() noexcept { return m_handle != 0; };
+  bool IsValid() noexcept { return m_handle != nullptr; };
 
 protected:
   HWND m_handle{nullptr};

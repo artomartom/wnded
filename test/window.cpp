@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pch.hpp"
+#include "../Hello.hpp"
 
 #define CASE(message, action) \
   case message:               \
@@ -80,7 +80,7 @@ public:
   {
     DBG_ONLY(_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF));
 
-    Window::Run(Window::CoreWindow<Test>{hinst, {800, 50, 1700, 1000}});
+     PeekRun(Window::CoreWindow<Test>{hinst, {800, 50, 1700, 1000}});
     MessageBeep(5);
     return 0;
   };
@@ -88,16 +88,16 @@ public:
   void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept
   {
 
-    if (CoreApp::m_IsVisible != args.IsMinimized)
+    if (CoreApp::m_isVisible != args.isMinimized)
     {
-      CoreApp::m_IsVisible = args.IsMinimized;
+      CoreApp::m_isVisible = args.isMinimized;
     };
     Log<Console>::Write(L"OnWindowActivate");
   };
 
   void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept
   {
-    switch (args.VirtualKey)
+    switch (args.virtualKey)
     {
       CASE(VK_ESCAPE, { CoreApp::Close(); });
       CASE(VK_SPACE, {});
@@ -107,7 +107,7 @@ public:
 
   void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept
   {
-    SIZE RTSize{RECTWIDTH(args.Rect), RECTHEIGHT(args.Rect)};
+    SIZE RTSize{RECTWIDTH(args.rect), RECTHEIGHT(args.rect)};
     Log<Console>::Write(L"OnCreate");
   };
 
@@ -115,14 +115,14 @@ public:
   void OnCursorMove(_In_ const ::Window::CursorArgs &args) noexcept
   {
 
-    Log<Console>::Write(L"OnCursorMove", L"val:", static_cast<UINT>(args.Event),
-                        L"Misc:", translateCursorArgsMisc(args.Misc), L"Misc val:", static_cast<WPARAM>(args.Misc));
+    Log<Console>::Write(L"OnCursorMove", L"val:", static_cast<UINT>(args.event),
+                        L"Misc:", translateCursorArgsMisc(args.misc), L"Misc val:", static_cast<WPARAM>(args.misc));
   };
   void OnCursorEvent(_In_ const ::Window::CursorArgs &args) noexcept
   {
-    Log<Console>::Write(L"OnCursorEvent Event:", translateCursorArgsEvent(args.Event), L"Event val:", static_cast<UINT>(args.Event),
+    Log<Console>::Write(L"OnCursorEvent Event:", translateCursorArgsEvent(args.event), L"Event val:", static_cast<UINT>(args.event),
                         L"cursor pos:", args.pos.x, args.pos.y,
-                        L"Misc:", translateCursorArgsMisc(args.Misc), L"Misc val:", static_cast<WPARAM>(args.Misc));
+                        L"Misc:", translateCursorArgsMisc(args.misc), L"Misc val:", static_cast<WPARAM>(args.misc));
   };
 
   void Draw() noexcept
@@ -133,6 +133,22 @@ public:
   void OnClose() noexcept
   {
     Log<Console>::Write(L"OnClose");
+  };
+
+  template <class TCoreWindow>
+  friend int __stdcall PeekRun(TCoreWindow &&window)
+  {
+    ::MSG messages{};
+    while (messages.message != WM_QUIT)
+    {
+
+      ::PeekMessageW(&messages, 0, 0, 0, PM_REMOVE);
+      ::TranslateMessage(&messages);
+      ::DispatchMessageW(&messages);
+
+       
+    };
+    return 0;
   };
 
 private:
