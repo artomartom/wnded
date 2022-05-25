@@ -48,10 +48,6 @@ namespace Writer
         }
     };
 
-    template <Type MT, Out O>
-    struct Message
-    {
-    };
     template <typename T>
     struct AddSpace
     {
@@ -87,11 +83,11 @@ namespace Writer
             std::wstringstream ss{};
             (((ss << prefix<MT>() << GetSysTime()) << arg) << ... << AddSpace(args)) << L'\n';
             std::lock_guard<std::mutex> lockGuard{m};
-            Wrapper::File file{Wrapper::File::CreateFile(L"Log.txt")};
-            file.Write(ss.view());
+            std::wfstream fos{L"Log.txt", std::ios::binary |std::ios::app};
+            //assert(fos.is_open());
+            fos << ss.str().c_str();
         };
     };
 
- 
 };
 #endif

@@ -21,11 +21,15 @@ int main()
             };
 
             for (auto &each : txt)
+            {
+                Log<Console>::Write(each, ' ', each);
                 Log<File>::Write(each, ' ', each);
+            }
         }};
 
     std::thread write1{Write};
     std::thread write2{Write};
     write1.join();
     write2.join();
+    MessageBeep(5);
 };
