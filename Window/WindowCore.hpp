@@ -14,13 +14,13 @@
 namespace Window
 {
 
-  
-
   class WindowCore
   {
   public:
-    WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect);
+    WindowCore() = default;
     WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect, const WindowCore &parent);
+    WindowCore(const WindowCore &) = delete;
+    WindowCore(WindowCore &&) = delete;
     virtual ~WindowCore();
 
     HWND Create(IProcCallback *callback);
@@ -30,6 +30,7 @@ namespace Window
 
     // implementation calls this function to programmatically close itself
     //    void Close() noexcept { ::SendMessageW(m_handle, WM_CLOSE, 0, 0); };
+
   private:
     RECT m_rect{};
     LPCWSTR m_className{};
@@ -45,13 +46,17 @@ namespace Window
   };
 
   template <typename ProcCallImpl>
-  class WindowCoreImpl :  public WindowCore,public ProcCallImpl 
+  struct WindowCoreImpl : public ProcCallImpl, public  WindowCore
   {
-  public:
     WindowCoreImpl(LPCWSTR className, RECT rect)
-        : WindowCore(static_cast<IProcCallback*>(this), className, rect){};
-    WindowCoreImpl(LPCWSTR className, RECT rect, const WindowCore &parent)
-        : WindowCore(static_cast<IProcCallback*>(this), className, rect){};
+        : WindowCore(static_cast<IProcCallback *>(this), className, rect, WindowCore{}){};
+  };
+
+  template <typename ProcCallImpl>
+  struct WindowChildImpl : public ProcCallImpl, public WindowCore
+  {
+    WindowChildImpl(LPCWSTR className, RECT rect, const WindowCore &parent)
+        : WindowCore(static_cast<IProcCallback *>(this), className, rect, parent){};
   };
 
 }

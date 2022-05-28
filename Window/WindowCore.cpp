@@ -24,7 +24,7 @@ namespace Window
       return nullptr;
     };
   };
-  WindowCore::WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect)
+  WindowCore::WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect, const WindowCore &parent)
       : m_rect{rect},
         m_className{RegisterWindowClass(className)},
         m_handle{WindowCore::Create(callback)}
@@ -34,16 +34,13 @@ namespace Window
 
       ::ShowWindow(m_handle, SW_SHOWDEFAULT);
       ::UpdateWindow(m_handle);
+
+      if (parent.Handle() != 0)
+        ::SetParent(m_handle, parent.Handle());
     }
     else
     { /*error*/
     };
-  };
-  WindowCore::WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect, const WindowCore &parent)
-      : WindowCore(callback, className, rect)
-  {
-    if (parent.Handle() != 0 && m_handle != 0)
-      ::SetParent(m_handle, parent.Handle());
   };
 
   HWND WindowCore::Create(IProcCallback *callback)
@@ -91,11 +88,8 @@ namespace Window
                {
                  CREATESTRUCTW *createStruct{reinterpret_cast<::CREATESTRUCTW *>(lParam)};
                  pCallbackable = reinterpret_cast<IProcCallback *>(createStruct->lpCreateParams); // needed to call OnCreate
-                 Log<Console>::Write(__LINE__);
-                 ::SetWindowLongPtrW(hWnd, -21, (LONG_PTR)pCallbackable); // GWL_USERDATA
-                 Log<Console>::Write(__LINE__);
+                 ::SetWindowLongPtrW(hWnd, -21, (LONG_PTR)pCallbackable);                         // GWL_USERDATA
                  pCallbackable->OnCreate(*createStruct);
-                 Log<Console>::Write(__LINE__);
                });
       PROCCASE(WM_ACTIVATE, false, { pCallbackable->OnWindowActivate({wParam}); });
       PROCCASE(WM_CLOSE, false, { ::PostQuitMessage(0); });
