@@ -71,7 +71,8 @@ namespace Window
                                Style::Regular::Resizable |
                                Style::Regular::Borber |
                                Style::Regular::TitleBar,
-                           Style::Extended::OverlappedWindow),
+                           Style::Extended::OverlappedWindow)
+                           ,
                      parent){};
   };
 };
