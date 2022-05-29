@@ -12,7 +12,7 @@ namespace Window
         sizeof(WNDCLASSEXW),
         0,
         CoreProcedure,
-        0, 0, GetModuleHandleW(NULL), 0, ::LoadCursorA(0, IDC_ARROW), 0, 0,
+        0, 0, GetModuleHandleW(NULL), 0, ::LoadCursorA(0, (LPSTR)IDC_ARROW), 0, 0,
         className, 0};
 
     if (::RegisterClassExW(&wincl))
@@ -24,10 +24,9 @@ namespace Window
       return nullptr;
     };
   };
-  WindowCore::WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect, const WindowCore &parent)
-      : m_rect{rect},
-        m_className{RegisterWindowClass(className)},
-        m_handle{WindowCore::Create(callback)}
+
+  WindowCore::WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect, Style style, const WindowCore &parent)
+      : m_handle{WindowCore::Create(callback, RegisterWindowClass(className), rect, style)}
   {
     if (m_handle != 0)
     {
@@ -43,17 +42,18 @@ namespace Window
     };
   };
 
-  HWND WindowCore::Create(IProcCallback *callback)
+  HWND WindowCore::Create(IProcCallback *callback, LPCWSTR className, RECT rect,Style style)
   {
-    if (m_className != nullptr)
+    if (className != nullptr)
     {
-      RECT MainRect{m_rect}; // adjusted rect
+      RECT MainRect{rect}; // adjusted rect
 
-      ::AdjustWindowRectEx(&MainRect, m_style, 0, m_styleEx);
+
+      ::AdjustWindowRectEx(&MainRect,  style.regular, 0, style.extended);
       return ::CreateWindowExW(
-          m_styleEx,
-          m_className, 0,
-          m_style | WS_MINIMIZE, // WS_MINIMIZE - wnd always minimize on creation
+          style.extended,
+          className, 0,
+           style.regular | WS_MINIMIZE, // WS_MINIMIZE - wnd always minimize on creation
           MainRect.left, MainRect.top,
           RECTWIDTH(MainRect),
           RECTHEIGHT(MainRect),
@@ -67,7 +67,7 @@ namespace Window
 
   WindowCore::~WindowCore()
   {
-    UnregisterClassW(m_className, 0);
+    //UnregisterClassW(className, 0);
     ::DestroyWindow(m_handle);
   };
 
@@ -77,7 +77,7 @@ namespace Window
   case message:                               \
     action;                                   \
     return boolreturn
-
+ 
     IProcCallback *pCallbackable{(IProcCallback *)::GetWindowLongPtrW(hWnd, -21)}; // GWL_USERDATA
 
 #if 1

@@ -42,18 +42,18 @@ namespace Window
         /**
          * Event proc message handlers
          */
-        virtual void OnCreate(_In_ const CreationArgs &args) noexcept = 0;
-        virtual void OnPaint() noexcept = 0;
-        virtual void OnClose() noexcept = 0;
-        virtual void OnKeyHold(_In_ const KeyEventArgs &args) noexcept = 0;
-        virtual void OnKeyStroke(_In_ const KeyEventArgs &args) noexcept = 0;
-        virtual void OnCursorMove(_In_ const CursorArgs &args) noexcept = 0;
-        virtual void OnCursorEvent(_In_ const CursorArgs &args) noexcept = 0;
-        virtual void OnSizing(_Inout_updates_opt_(1) RECT *pRect) noexcept = 0;
-        virtual void OnCommand(_In_ const CommandArgs &args) noexcept = 0;
-        virtual void OnSizeChanged(_In_ const SizeChangedArgs &args) noexcept = 0;
-        virtual void OnWindowActivate(_In_ const ActivateArgs &args) noexcept = 0;
-        virtual void OnAppEvent(_In_ const AppEventArgs &args) noexcept = 0;
+        virtual void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept  {};
+        virtual void OnPaint() noexcept  {};
+        virtual void OnClose() noexcept  {};
+        virtual void OnKeyHold(_In_ const ::Window::KeyEventArgs &args) noexcept  {};
+        virtual void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept  {};
+        virtual void OnCursorMove(_In_ const ::Window::CursorArgs &args) noexcept  {};
+        virtual void OnCursorEvent(_In_ const ::Window::CursorArgs &args) noexcept  {};
+        virtual void OnSizing(_Inout_updates_opt_(1) RECT *pRect) noexcept  {};
+        virtual void OnCommand(_In_ const ::Window::CommandArgs &args) noexcept  {};
+        virtual void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept  {};
+        virtual void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept  {};
+        virtual void OnAppEvent(_In_ const ::Window::AppEventArgs &args) noexcept  {};
     };
 
 }

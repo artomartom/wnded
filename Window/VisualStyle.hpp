@@ -9,14 +9,24 @@
 
 namespace Window
 {
-    enum Style : ::DWORD
+    struct Style
     {
-        SysMenu = WS_SYSMENU,
-        Minimizable = WS_MINIMIZEBOX,
-        Maximizable = WS_MAXIMIZEBOX,
-        Resizable = WS_THICKFRAME,
-        Borber = WS_BORDER,
-        TitleBar = WS_CAPTION,
+        Style(enum Regular r, enum Extended ex)
+            : regular{r}, extended{ex} {};
+        enum Regular : ::DWORD
+        {
+            SysMenu = WS_SYSMENU,
+            Minimizable = WS_MINIMIZEBOX,
+            Maximizable = WS_MAXIMIZEBOX,
+            Resizable = WS_THICKFRAME,
+            Borber = WS_BORDER,
+            TitleBar = WS_CAPTION,
+        } regular{};
+        enum Extended : ::DWORD
+        {
+            OverlappedWindow = WS_EX_OVERLAPPEDWINDOW,
+
+        } extended{};
     };
 }
 #endif // WINDOW_VISUAL_HPP
