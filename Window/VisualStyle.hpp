@@ -11,8 +11,17 @@ namespace Window
 {
     struct Style
     {
-        Style(enum Regular r, enum Extended ex)
-            : regular{r}, extended{ex} {};
+        // Style(enum Regular r, enum Extended ex)
+        //     : regular{r}, extended{ex} {};
+
+        Style()
+            : regular{Regular::SysMenu |
+                      Regular::Minimizable |
+                      Regular::Maximizable |
+                      Regular::Resizable |
+                      Regular::Borber |
+                      Regular::TitleBar},
+              extended{Extended::OverlappedWindow} {};
         enum Regular : ::DWORD
         {
             SysMenu = WS_SYSMENU,
@@ -20,6 +29,8 @@ namespace Window
             Maximizable = WS_MAXIMIZEBOX,
             Resizable = WS_THICKFRAME,
             Borber = WS_BORDER,
+            Minimized = WS_MINIMIZE,
+            Child = WS_CHILD,
             TitleBar = WS_CAPTION,
         } regular{};
         enum Extended : ::DWORD
@@ -27,6 +38,9 @@ namespace Window
             OverlappedWindow = WS_EX_OVERLAPPEDWINDOW,
 
         } extended{};
+
+        auto GetRegular() const noexcept { return regular; };
+        auto GetExtended() const noexcept { return extended; };
     };
 }
 #endif // WINDOW_VISUAL_HPP

@@ -1,34 +1,20 @@
 
-#include "Window/WindowCore.hpp"
-
 #include "Hello//Hello.hpp"
-
-using namespace Window;
+#include "Window/Window.hpp"
 
 // Log<Console>::Write(__LINE__);
-class ParentProcCallback : public IProcCallback
-{
-    void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept override { Log<Console>::Write(L"Create"); };
-    void OnCursorEvent(_In_ const ::Window::CursorArgs &args) noexcept override { Log<Console>::Write(L"cursor"); };
-};
-class ParentWindow : public WindowCoreImpl<ParentProcCallback>
-{
-public:
-    ParentWindow()
-        : WindowCoreImpl{L"parent", RECT{100, 100, 1000, 1000}} {};
-};
 
-class child1Window : public WindowChildImpl<ParentProcCallback>
+class ParentWindow : public Window::IProcCallback, public Window::Handle
 {
 public:
-    child1Window(const WindowCore &parent)
-        : WindowChildImpl{L"child1", RECT{300, 200, 400, 400}, parent} {};
+    ParentWindow() = default;
+    void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept override { Log<Console>::Write(L"Create Parent"); };
+    void OnCursorEvent(_In_ const ::Window::CursorArgs &args) noexcept override{/*Log<Console>::Write(L"cursor"); */};
+    void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept override{/* Log<Console>::Write(L"Activate"); */};
 };
-class child2Window : public WindowChildImpl<ParentProcCallback>
+class Child : public ParentWindow
 {
-public:
-    child2Window(const WindowCore &parent)
-        : WindowChildImpl{L"child2", RECT{50, 50, 300, 200}, parent} {};
+    void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept override { Log<Console>::Write(L"Create Child"); };
 };
 
 int s_main()
@@ -36,12 +22,9 @@ int s_main()
 #if 1
 
     ParentWindow pw{};
-    child1Window cw1{pw};
-    child2Window cw2{pw};
-
-    if (!(pw.IsValid() && cw1.IsValid() &&
-          cw2.IsValid()))
-        return -1;
+    Child cw{};
+    Window::InitWindow(L"parent", RECT{100, 100, 1000, 1000}, &pw);
+    Window::InitChildWindow(L"child", RECT{50, 50, 100, 200}, &pw, &cw);
 
     ::MSG messages{};
     while (messages.message != WM_QUIT)

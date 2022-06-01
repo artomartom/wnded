@@ -1,8 +1,7 @@
 
-#include "WindowCore.hpp"
+#include "Window.hpp"
 #include "EventHandlers.hpp"
-
-#include "../Hello//Hello.hpp"
+#include "../Hello/Hello.hpp"
 namespace Window
 {
   static ::LRESULT __stdcall CoreProcedure(::HWND hWnd, ::UINT message, ::WPARAM wParam, ::LPARAM lParam);
@@ -21,54 +20,38 @@ namespace Window
     }
     else
     {
+      Error<::Console>::Write(__LINE__);
       return nullptr;
     };
   };
 
-  WindowCore::WindowCore(IProcCallback *callback, LPCWSTR className, RECT rect, Style style, const WindowCore &parent)
-      : m_handle{WindowCore::Create(callback, RegisterWindowClass(className), rect, style)}
+  Handle Create(IProcCallback *callback, LPCWSTR className, RECT rect, Style style, const Handle &parent)
   {
-    if (m_handle != 0)
+    if (RegisterWindowClass(className) == nullptr)
     {
-
-      ::ShowWindow(m_handle, SW_SHOWDEFAULT);
-      ::UpdateWindow(m_handle);
-
-      if (parent.Handle() != 0)
-        ::SetParent(m_handle, parent.Handle());
+      Error<::Console>::Write(__LINE__);
+      return Handle{nullptr};
     }
     else
-    { /*error*/
-    };
-  };
-
-  HWND WindowCore::Create(IProcCallback *callback, LPCWSTR className, RECT rect,Style style)
-  {
-    if (className != nullptr)
     {
-      RECT MainRect{rect}; // adjusted rect
+      RECT adjustedRect{rect};
+      ::AdjustWindowRectEx(&adjustedRect, style.GetRegular(), 0, style.GetExtended());
 
-
-      ::AdjustWindowRectEx(&MainRect,  style.regular, 0, style.extended);
-      return ::CreateWindowExW(
-          style.extended,
+      return Handle{::CreateWindowExW(
+          style.GetExtended(),
           className, 0,
-           style.regular | WS_MINIMIZE, // WS_MINIMIZE - wnd always minimize on creation
-          MainRect.left, MainRect.top,
-          RECTWIDTH(MainRect),
-          RECTHEIGHT(MainRect),
-          HWND_DESKTOP, nullptr, nullptr, callback);
-    }
-    else
-    {
-      return 0;
+          style.GetRegular() | Style::Regular::Minimized | (parent.IsValid() ? Style::Regular::Child : 0), // Minimized - wnd always minimize on creation
+          adjustedRect.left, adjustedRect.top,
+          RECTWIDTH(adjustedRect),
+          RECTHEIGHT(adjustedRect),
+          parent.IsValid() ? parent.Get() : HWND_DESKTOP,
+          nullptr, nullptr, callback)};
     }
   };
-
-  WindowCore::~WindowCore()
+  void ShowWindow(const Handle &handle)
   {
-    //UnregisterClassW(className, 0);
-    ::DestroyWindow(m_handle);
+    ::ShowWindow(handle.Get(), SW_SHOWDEFAULT);
+    ::UpdateWindow(handle.Get());
   };
 
   static ::LRESULT __stdcall CoreProcedure(::HWND hWnd, ::UINT message, ::WPARAM wParam, ::LPARAM lParam)
@@ -77,7 +60,7 @@ namespace Window
   case message:                               \
     action;                                   \
     return boolreturn
- 
+
     IProcCallback *pCallbackable{(IProcCallback *)::GetWindowLongPtrW(hWnd, -21)}; // GWL_USERDATA
 
 #if 1
