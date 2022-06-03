@@ -42,5 +42,5 @@ namespace Window
     private:
         HWND m_handle{nullptr};
     };
-
+    
 };

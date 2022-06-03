@@ -38,9 +38,29 @@ namespace Window
             OverlappedWindow = WS_EX_OVERLAPPEDWINDOW,
 
         } extended{};
+        using Regular_ut = ::DWORD;
+        using Extended_ut = ::DWORD;
+
+
+        enum Regular &operator|=(enum Regular r)
+        {
+            regular = Regular(regular | r);
+            return regular;
+        };
+        enum Extended &operator|=(enum Extended e)
+        {
+            extended = Extended(extended | e);
+            return extended;
+        };
 
         auto GetRegular() const noexcept { return regular; };
         auto GetExtended() const noexcept { return extended; };
+    };
+
+    struct CreationFlags
+    {
+        
+
     };
 }
 #endif // WINDOW_VISUAL_HPP

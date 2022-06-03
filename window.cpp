@@ -1,145 +1,159 @@
-#pragma once
 
-#include "Hello//Hello.hpp"
-#include "Window//Window.hpp"
+#include "Window.hpp"
 
-#define CASE(message, action) \
-  case message:               \
-    action;                   \
-    break
-
-using namespace Window;
-
-using CursorArgs::Event::DoubleClick;
-using CursorArgs::Event::Down;
-using CursorArgs::Event::LDoubClick;
-using CursorArgs::Event::LDown;
-using CursorArgs::Event::Left;
-using CursorArgs::Event::LUp;
-using CursorArgs::Event::MDoubClick;
-using CursorArgs::Event::MDown;
-using CursorArgs::Event::Middle;
-using CursorArgs::Event::Move;
-using CursorArgs::Event::MUp;
-using CursorArgs::Event::None;
-using CursorArgs::Event::RDoubClick;
-using CursorArgs::Event::RDown;
-using CursorArgs::Event::Right;
-using CursorArgs::Event::RUp;
-using CursorArgs::Event::Up;
-
-const std::wstring translateCursorArgsMisc(enum CursorArgs::Misc In)
+namespace Window
 {
-
-  using CursorArgs::Misc::CtrlDown;
-  using CursorArgs::Misc::LBDown;
-  using CursorArgs::Misc::MBDown;
-  using CursorArgs::Misc::None;
-  using CursorArgs::Misc::RBDown;
-  using CursorArgs::Misc::ShiftDown;
-  using CursorArgs::Misc::X1Down;
-  using CursorArgs::Misc::X2Down;
-  switch (In)
+  static ::LRESULT __stdcall CoreProcedure(::HWND hWnd, ::UINT message, ::WPARAM wParam, ::LPARAM lParam);
+  LPCWSTR RegisterWindowClass(LPCWSTR className, WNDPROC proc)
   {
 
-    CASE(None, return L"None";);
-    CASE(CtrlDown, return L"CtrlDown";);
-    CASE(LBDown, return L"LBDown";);
-    CASE(MBDown, return L"MBDown";);
-    CASE(RBDown, return L"RBDown";);
-    CASE(ShiftDown, return L"ShiftDown";);
-    CASE(X1Down, return L"X1Down";);
-    CASE(X2Down, return L"X2Down";);
-  default:
-    return L"CursorArgsMisc:undefined";
-  };
-};
-
-const std::wstring translateCursorArgsEvent(enum CursorArgs::Event In)
-{
-  switch (In)
-  {
-    CASE(LUp, return L"LUp";);
-    CASE(LDown, return L"LDown";);
-    CASE(LDoubClick, return L"LDoubClick";);
-    CASE(MUp, return L"MUp";);
-    CASE(MDown, return L"MDown";);
-    CASE(MDoubClick, return L"MDoubClick";);
-    CASE(RUp, return L"RUp";);
-    CASE(RDown, return L"RDown";);
-    CASE(RDoubClick, return L"RDoubClick";);
-  default:
-    return L"CursorArg:undefined";
-  };
-};
-
-class Test : public CoreApp
-{
-
-public:
-  static int AppEntry(HINSTANCE hinst)
-  {
-    DBG_ONLY(_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF));
-
-    RunImmediate(Window::WindowCore<Test>{hinst, {800, 50, 1700, 1000}});
-    MessageBeep(5);
-    return 0;
-  };
-
-  void OnWindowActivate(_In_ const ::Window::ActivateArgs &args) noexcept
-  {
-
-    if (CoreApp::m_isVisible != args.isMinimized)
+    WNDCLASSEXW wincl{
+        sizeof(WNDCLASSEXW),
+        0,
+        proc,
+        0, 0, GetModuleHandleW(NULL), 0, ::LoadCursorA(0, (LPSTR)IDC_ARROW), 0, 0,
+        className, 0};
+    ::SetLastError(0);
+    if (::RegisterClassExW(&wincl))
     {
-      CoreApp::m_isVisible = args.isMinimized;
-    };
-    Log<Console>::Write(L"OnWindowActivate");
-  };
-
-  void OnKeyStroke(_In_ const ::Window::KeyEventArgs &args) noexcept
-  {
-    switch (args.virtualKey)
-    {
-      CASE(VK_ESCAPE, { CoreApp::Close(); });
-      CASE(VK_SPACE, {});
+      return className;
     }
-    Log<Console>::Write(L"OnKeyStroke");
+    else
+    {
+
+      return nullptr;
+    };
   };
 
- void OnCreate(_In_ const ::Window::CreationArgs &args) noexcept
+  Handle Create(RECT rect, Style style, const Handle *parent, IProcCallback *callback)
   {
-    SIZE RTSize{RECTWIDTH(args.rect), RECTHEIGHT(args.rect)};
-    Log<Console>::Write(L"OnCreate");
-    
-  };
+    static USHORT classCount{0};
+    WCHAR className[15]{};
+    swprintf(className, _countof(className), L"className%o", classCount);
+    if (RegisterWindowClass(className, CoreProcedure) == nullptr)
+    {
+      return Handle{nullptr};
+    }
 
-  void OnSizeChanged(_In_ const ::Window::SizeChangedArgs &args) noexcept { Log<Console>::Write(L"OnSizeChanged"); };
-  void OnCursorMove(_In_ const ::Window::CursorArgs &args) noexcept
+    ++classCount;
+    RECT adjustedRect{rect};
+    ::AdjustWindowRectEx(&adjustedRect, style.GetRegular(), 0, style.GetExtended());
+    bool HasParent{parent != nullptr};
+    HWND parentHWND{HWND_DESKTOP};
+    if (HasParent)
+    {
+      if (!parent->IsValid())
+      {
+        HasParent = false;
+      }
+      else
+      {
+        parentHWND = parent->Get();
+        style |= Style::Regular::Child;
+      };
+    };
+    ::SetLastError(0);
+    return Handle{::CreateWindowExW(
+        style.GetExtended(),
+        className, 0,
+        style.GetRegular() | Style::Regular::Minimized, // Minimized - wnd always minimize on creation
+        adjustedRect.left, adjustedRect.top,
+        RECTWIDTH(adjustedRect),
+        RECTHEIGHT(adjustedRect),
+        parentHWND,
+        nullptr, nullptr, callback)};
+  };
+  void ShowWindow(const Handle &handle)
   {
-
-    Log<Console>::Write(L"OnCursorMove", L"val:", static_cast<UINT>(args.event),
-                        L"Misc:", translateCursorArgsMisc(args.misc), L"Misc val:", static_cast<WPARAM>(args.misc));
+    ::ShowWindow(handle.Get(), SW_SHOWDEFAULT);
+    ::UpdateWindow(handle.Get());
   };
-  void OnCursorEvent(_In_ const ::Window::CursorArgs &args) noexcept
+
+  void InitWindow(RECT rect, Impl::Handle *parent, Impl *impl)
   {
-    Log<Console>::Write(L"OnCursorEvent Event:", translateCursorArgsEvent(args.event), L"Event val:", static_cast<UINT>(args.event),
-                        L"cursor pos:", args.pos.x, args.pos.y,
-                        L"Misc:", translateCursorArgsMisc(args.misc), L"Misc val:", static_cast<WPARAM>(args.misc));
+    auto &thisHandle{static_cast<Impl::Handle &>(*impl)};
+    thisHandle = Create(
+        rect,
+        Style{},
+        parent,
+        static_cast<Impl::IProcCallback *>(impl));
+    if (thisHandle.IsValid())
+    {
+      ShowWindow(thisHandle);
+    }
+    else
+    { /*error*/
+      // Error<::Console>::Write(__LINE__);
+    };
   };
 
-  void Draw() noexcept
+  static ::LRESULT __stdcall CoreProcedure(::HWND hWnd, ::UINT message, ::WPARAM wParam, ::LPARAM lParam)
   {
-    Log<Console>::Write(L"Draw");
-  };
+#define PROCCASE(message, boolreturn, action) \
+  case message:                               \
+    action;                                   \
+    return boolreturn
 
-  void OnClose() noexcept
-  {
-    Log<Console>::Write(L"OnClose");
-  };
+    IProcCallback *pCallbackable{(IProcCallback *)::GetWindowLongPtrW(hWnd, -21)}; // GWL_USERDATA
 
-private:
+#if 1
+    switch (message)
+    {
+      /*window status */
+      PROCCASE(WM_CREATE, false,
+               {
+                 CREATESTRUCTW *createStruct{reinterpret_cast<::CREATESTRUCTW *>(lParam)};
+                 pCallbackable = reinterpret_cast<IProcCallback *>(createStruct->lpCreateParams); // needed to call OnCreate
+                 ::SetWindowLongPtrW(hWnd, -21, (LONG_PTR)pCallbackable);                         // GWL_USERDATA
+                 pCallbackable->OnCreate(*createStruct);
+               });
+      PROCCASE(WM_ACTIVATE, false, { pCallbackable->OnWindowActivate({wParam}); });
+      PROCCASE(WM_CLOSE, false, {  pCallbackable->OnClose(CloseArgs {}); ::PostQuitMessage(0); });
+      /*visual*/
+      PROCCASE(WM_ERASEBKGND, true, {});
+      PROCCASE(WM_PAINT, false,
+               {
+                 ::ValidateRect(hWnd, 0);
+                 pCallbackable->OnPaint(PaintArgs{});
+               };);
+      /*window size*/
+      PROCCASE(WM_SIZE, false, pCallbackable->OnSizeChanged({wParam, lParam}));
+      PROCCASE(WM_SIZING, true, pCallbackable->OnSizing(reinterpret_cast<RECT *>(lParam)));
+      PROCCASE(WM_ENTERSIZEMOVE, false, { ::Sleep(30); });
+      PROCCASE(WM_EXITSIZEMOVE, false, { ::Sleep(30); });
+
+#pragma region user_input
+      PROCCASE(WM_MOUSEMOVE, false, pCallbackable->OnCursorMove(CursorArgs{CursorArgs::Event::Move, wParam, lParam}));
+      // left button
+      PROCCASE(WM_LBUTTONUP, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::LUp, wParam, lParam)));
+      PROCCASE(WM_LBUTTONDOWN, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::LDown, wParam, lParam)));
+      PROCCASE(WM_LBUTTONDBLCLK, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::LDoubClick, wParam, lParam)));
+      // middle button
+      PROCCASE(WM_MBUTTONUP, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::MUp, wParam, lParam)));
+      PROCCASE(WM_MBUTTONDOWN, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::MDown, wParam, lParam)));
+      PROCCASE(WM_MBUTTONDBLCLK, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::MDoubClick, wParam, lParam)));
+      // right button
+      PROCCASE(WM_RBUTTONUP, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::RUp, wParam, lParam)));
+      PROCCASE(WM_RBUTTONDOWN, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::RDown, wParam, lParam)));
+      PROCCASE(WM_RBUTTONDBLCLK, false, pCallbackable->OnCursorEvent(CursorArgs(CursorArgs::Event::RDoubClick, wParam, lParam)));
+      // keyboard
+      PROCCASE(WM_KEYDOWN, false, { (!(lParam & (1LL << 31))) ? pCallbackable->OnKeyStroke({wParam}) : pCallbackable->OnKeyHold({wParam}); });
+      // misc
+      PROCCASE(WM_COMMAND, false, { pCallbackable->OnCommand(CommandArgs(wParam, lParam)); });
+#pragma region end // user_input
+    };
+
+    if (message > WM_APP)
+    {
+      pCallbackable->OnAppEvent(AppEventArgs(message, wParam, lParam));
+      return 0;
+    }
+    else
+    {
+      return ::DefWindowProcW(hWnd, message, wParam, lParam);
+    };
+
+#undef PROCCASE
+#endif
+  };
 };
-
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-int wWinMain(_In_ HINSTANCE hinst, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) { return Invoke(&Test::AppEntry, hinst); };
-int main() { return Invoke(&Test::AppEntry, (HINSTANCE)&__ImageBase); };

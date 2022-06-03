@@ -7,10 +7,10 @@ namespace Window
 
     struct CreationArgs
     {
-        CreationArgs(const  CREATESTRUCTW&){};
-        
+        CreationArgs(const CREATESTRUCTW &){};
         ::HINSTANCE hInst{};
         ::RECT rect{};
+        using Status = int;
     };
 
     struct SizeChangedArgs
@@ -32,6 +32,7 @@ namespace Window
         {
             long width, height;
         } newSize{};
+        using Status = int;
     };
 
     struct AppEventArgs
@@ -41,6 +42,8 @@ namespace Window
         ::WPARAM wParam{};
         ::LPARAM lParam{};
         ::ULONG message{};
+
+        using Status = int;
     };
 
     struct CursorArgs
@@ -91,6 +94,11 @@ namespace Window
             X2Down_Misc = MK_XBUTTON2,  // The second X button is down.
         } misc{};
         ::POINT pos{};
+        using Status = int;
+    };
+    struct PaintArgs
+    {
+        using Status = int;
     };
 
     struct CommandArgs
@@ -99,6 +107,7 @@ namespace Window
             : wParam{wParam}, lParam{lParam} {};
         ::WPARAM wParam{};
         ::LPARAM lParam{};
+        using Status = int;
     };
 
     struct KeyEventArgs
@@ -106,6 +115,7 @@ namespace Window
         KeyEventArgs(::WPARAM wParam)
             : virtualKey{wParam} {};
         ::WPARAM virtualKey{}; // Key Code   ...
+        using Status = int;
     };
 
     struct ActivateArgs
@@ -121,8 +131,33 @@ namespace Window
             Deactivated = WA_INACTIVE,       // Deactivated.
         } activateType{};
         bool isMinimized{};
+        using Status = int;
     };
 
+    struct CloseArgs
+    {
+        using Status = int;
+    };
+
+    class IProcCallback
+    {
+    public:
+        /**
+         * Event proc message handlers
+         */
+        virtual CreationArgs::Status OnCreate(_In_ const CreationArgs &args) noexcept { return CreationArgs::Status{}; };
+        virtual PaintArgs::Status OnPaint(const PaintArgs &args) noexcept { return PaintArgs::Status{}; };
+        virtual CloseArgs::Status OnClose(const CloseArgs &args) noexcept { return CloseArgs::Status{}; };
+        virtual KeyEventArgs::Status OnKeyHold(_In_ const KeyEventArgs &args) noexcept { return KeyEventArgs::Status{}; };
+        virtual KeyEventArgs::Status OnKeyStroke(_In_ const KeyEventArgs &args) noexcept { return KeyEventArgs::Status{}; };
+        virtual CursorArgs::Status OnCursorMove(_In_ const CursorArgs &args) noexcept { return CursorArgs::Status{}; };
+        virtual CursorArgs::Status OnCursorEvent(_In_ const CursorArgs &args) noexcept { return CursorArgs::Status{}; };
+        virtual void OnSizing(_Inout_updates_opt_(1) RECT *pRect) noexcept {};
+        virtual CommandArgs::Status OnCommand(_In_ const CommandArgs &args) noexcept { return CommandArgs::Status{}; };
+        virtual SizeChangedArgs::Status OnSizeChanged(_In_ const SizeChangedArgs &args) noexcept { return SizeChangedArgs::Status{}; };
+        virtual ActivateArgs::Status OnWindowActivate(_In_ const ActivateArgs &args) noexcept { return ActivateArgs::Status{}; };
+        virtual AppEventArgs::Status OnAppEvent(_In_ const AppEventArgs &args) noexcept { return AppEventArgs::Status{}; };
+    };
 }
 
 #endif // WINDOW_EVENT_HANDLERS_HPP
